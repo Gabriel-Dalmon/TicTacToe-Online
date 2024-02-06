@@ -1,21 +1,20 @@
 #pragma once
+#pragma once
 #include "../engine/core/GameState.h"
 
 class Window;
 class GameObject;
 
-class PlayGameState : public GameState 
+class MP_PlayMoveGameState : public GameState
 {
 public:
-	PlayGameState();
-	PlayGameState(Window* pWindow);
-	~PlayGameState();
+	MP_PlayMoveGameState();
+	MP_PlayMoveGameState(MP_WaitForGridUpdateGameState previousGameState);
+	~MP_PlayMoveGameState();
 	void initPlayGameState(Window* pWindow);
-	void switchStateDefeat();
-	void switchStatePause();
 	void enter() override;
 	void update(float deltaTime) override;
 
 private:
-
+	SOCKET* socket;
 };

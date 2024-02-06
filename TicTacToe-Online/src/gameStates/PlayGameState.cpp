@@ -6,19 +6,24 @@
 #include "../objects/Grid.h"
 #include "../engine/core/GameManager.h"
 #include "../engine/events/MethodCommand.h"
+#include "../networking/ClientSocket.h"
+
+
 
 PlayGameState::PlayGameState()
 {
     Window* pWindow = GameManager::instance().getWindow();
-    this->initGrid(pWindow);
+    this->initPlayGameState(pWindow);
 }
 
 PlayGameState::PlayGameState(Window* pWindow) 
 {
-    this->initGrid(pWindow);
+    this->initPlayGameState(pWindow);
 }
 
-void PlayGameState::initGrid(Window* pWindow) {
+void PlayGameState::initPlayGameState(Window* pWindow) {
+   
+
     sf::Vector2f fWindowSize = (sf::Vector2f)pWindow->getSFMLObject()->getSize();
     this->spawnGameObject(new Background(fWindowSize.x, fWindowSize.y));
 

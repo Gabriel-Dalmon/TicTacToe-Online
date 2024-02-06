@@ -5,7 +5,8 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <json/json.h>
+#include <iostream>
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
 #pragma comment (lib, "Ws2_32.lib")
@@ -15,7 +16,15 @@
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "6942"
-#define SERVER_IP "10.1.144.15"//"10.1.144.23" // 192.168.56.1 // 
+#define SERVER_IP "10.1.144.23"
+
+void generateBuffer(Json::Value json) {
+    Json::StreamWriterBuilder builder;
+    const std::string json_file = Json::writeString(builder, json);
+    std::cout << json_file << "\n" << json_file.length() << std::endl;
+    unsigned char b = (unsigned char)json_file.length();
+    std::cout << "\n" << b << std::endl;
+}
 
 int __cdecl main(int argc, char** argv)
 {
@@ -25,8 +34,12 @@ int __cdecl main(int argc, char** argv)
         * ptr = NULL,
         hints;
 
-    //nlohmann::json j = "{ \"happy\": true, \"pi\": 3.141 }"_json;
-    //const char* sendbuf2 = = j.dump();
+    Json::Value sendbuf2;
+    sendbuf2["key0"] = 156;
+    sendbuf2["key1"] = "Value1";
+    sendbuf2["key2"] = "Value2";
+    generateBuffer(sendbuf2);
+    //std::cout << sendbuf2["key"] << std::endl;
     const char* sendbuf = "this is a test";
     char recvbuf[DEFAULT_BUFLEN];
     int iResult;
