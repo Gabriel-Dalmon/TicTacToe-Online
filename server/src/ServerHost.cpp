@@ -104,6 +104,7 @@ int __cdecl ServerHost::host()
         //do {
             for(int i=0; i<2; i++)
             {
+                Sleep(3000);
                 iResult = recv(clientList[i], recvbuf, recvbuflen, 0);
                 if (iResult > 0) {
                     printf("Bytes received: %d\n", iResult);
