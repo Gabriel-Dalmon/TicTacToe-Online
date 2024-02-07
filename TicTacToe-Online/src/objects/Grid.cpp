@@ -40,8 +40,10 @@ void Grid::onMouseClick()
 		GameManager::instance().getEventsManager()->trigger(EventName::CELL_ALREADY_TAKEN);
 		return;
 	}
-	m_GridState[column * m_GridSize + row] = m_CurrentPlayer;
+	GameManager::instance().getEventsManager()->sendJSONWrapper()
+	/*m_GridState[column * m_GridSize + row] = m_CurrentPlayer;
 	Symbol* symbol = new Symbol(m_CurrentPlayer == 1 ? AssetSymbol::CROSS : AssetSymbol::CIRCLE, gridPosition.x + column * cellSize, gridPosition.y + row * cellSize, cellSize, cellSize);
+	
 	GameManager::instance().getGameState()->spawnGameObject(symbol);
 	m_CurrentPlayer = -m_CurrentPlayer;
 	WinDirection winDirection = this->isMoveWinning();
@@ -50,7 +52,8 @@ void Grid::onMouseClick()
 		std::cout << "GAME OVER \n";
 		return;
 	}
-	GameManager::instance().getEventsManager()->trigger(EventName::MOVE_PLAYED);
+	GameManager::instance().getEventsManager()->trigger(EventName::MOVE_PLAYED);*/
+
 }
 
 // Specific for 3x3 grid in 1D array and win condition being to align 3 symbols.
