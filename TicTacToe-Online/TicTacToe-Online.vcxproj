@@ -133,6 +133,7 @@
     <ClCompile Include="src\engine\core\GameState.cpp" />
     <ClCompile Include="src\engine\core\MP_GameState.cpp" />
     <ClCompile Include="src\gameStates\GameOverGameState.cpp" />
+    <ClCompile Include="src\gameStates\MP_InitSocketGameState.cpp" />
     <ClCompile Include="src\gameStates\MP_PlayMoveGameState.cpp" />
     <ClCompile Include="src\gameStates\MP_WaitForGridUpdateGameState.cpp" />
     <ClCompile Include="src\gameStates\PauseGameState.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="src\engine\events\FunctionCommand.h" />
     <ClInclude Include="src\engine\events\MethodCommand.h" />
     <ClInclude Include="src\gameStates\GameOverGameState.h" />
+    <ClInclude Include="src\gameStates\MP_InitSocketGameState.h" />
     <ClInclude Include="src\gameStates\MP_PlayMoveGameState.h" />
     <ClInclude Include="src\gameStates\MP_WaitForGridUpdateGameState.h" />
     <ClInclude Include="src\gameStates\PauseGameState.h" />

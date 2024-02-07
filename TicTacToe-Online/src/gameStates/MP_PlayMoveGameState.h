@@ -6,16 +6,18 @@
 
 class Window;
 class GameObject;
+class MP_WaitForGridUpdateGameState;
 
 class MP_PlayMoveGameState : public MP_GameState
 {
 public:
+	MP_WaitForGridUpdateGameState* m_pWaitGameState;
+
 	MP_PlayMoveGameState();
 	MP_PlayMoveGameState(MP_WaitForGridUpdateGameState previousGameState);
 	~MP_PlayMoveGameState();
-	void initPlayGameState(Window* pWindow);
 	void update(float deltaTime) override;
 
 private:
-	Grid* grid;
+	Grid* m_pGrid;
 };

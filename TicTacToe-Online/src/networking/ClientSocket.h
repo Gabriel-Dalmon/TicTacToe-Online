@@ -4,6 +4,9 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+#define DEFAULT_PORT ""
+#define SERVER_IP ""
+
 namespace Json {
 	class Value;
 }
@@ -11,7 +14,7 @@ namespace Json {
 class ClientSocket
 {
 public:
-	ClientSocket();
+	ClientSocket(const char* sServerIpAdress, const char* sPort);
 	~ClientSocket();
 	const char* serializeToBytes(Json::Value jsonValue);
 	Json::Value deserializeToJSON(char* pBytesValue);
@@ -22,5 +25,5 @@ public:
 protected:
 	SOCKET m_ConnectSocket = INVALID_SOCKET;
 	addrinfo* m_ServerAdressInfo = NULL;
-	char* port;
+	const char* m_sPort;
 };

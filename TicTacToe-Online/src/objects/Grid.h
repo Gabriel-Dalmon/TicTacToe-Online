@@ -34,4 +34,3 @@ private:
 	int m_CurrentPlayer = 1;
 	sf::Sprite* m_Sprite;
 };
-

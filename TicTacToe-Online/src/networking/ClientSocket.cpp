@@ -5,7 +5,6 @@
 #include "../engine/core/GameManager.h"
 #include "../engine/events/EventsManager.h"
 
-
 #include <json/json.h>
 #include <iostream>
 
@@ -21,9 +20,10 @@
 #define HEADER_LENGTH 0//5
 #define DEFAULT_BUFFER_LENGTH 127
 
-ClientSocket::ClientSocket()
+ClientSocket::ClientSocket(const char* sServerIpAdress, const char* sPort)
 {
-    
+    m_sPort = sPort;
+
     struct addrinfo hints;
 
     ZeroMemory(&hints, sizeof(hints));
@@ -31,19 +31,17 @@ ClientSocket::ClientSocket()
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
-    int iResult = getaddrinfo(SERVER_IP, DEFAULT_PORT, &hints, &m_ServerAdressInfo);
+    int iResult = getaddrinfo(sServerIpAdress, m_sPort, &hints, &m_ServerAdressInfo);
     if (iResult != 0) {
         std::cout << "getaddrinfo failed with error : % d\n" << iResult << "\n";
     }
+
+    connect(m_ConnectSocket, m_ServerAdressInfo->ai_addr, (int)m_ServerAdressInfo->ai_addrlen);
 }
 
 ClientSocket::~ClientSocket()
 {
     closesocket(m_ConnectSocket);
-}
-
-int ClientSocket::connectSocket() {
-    return connect(m_ConnectSocket, m_ServerAdressInfo->ai_addr, (int)m_ServerAdressInfo->ai_addrlen);
 }
 
 void ClientSocket::generateBuffer(Json::Value json) {

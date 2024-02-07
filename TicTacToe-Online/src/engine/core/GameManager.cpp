@@ -62,7 +62,7 @@ GameState* GameManager::getGameState()
     return this->gameState;
 }
 
-void GameManager::switchGameState(GameState* gameState)
+void GameManager::switchGameState(GameState* gameState, destroyPreviousGameState = )
 {
     std::cout << "Switching game state" << std::endl;
     this->gameState = gameState;
