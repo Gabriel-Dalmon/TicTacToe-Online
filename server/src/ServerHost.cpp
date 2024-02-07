@@ -11,7 +11,6 @@
 ServerHost::ServerHost() {
 
     ListenSocket = INVALID_SOCKET;
-    ClientSocket = INVALID_SOCKET;
 
     addrinfo* result = NULL;
     addrinfo hints;
@@ -23,22 +22,22 @@ ServerHost::ServerHost() {
 
 ServerHost::~ServerHost() {
     closesocket(ListenSocket);
-    // shutdown the connection since we're done
-    iResult = shutdown(ClientSocket, SD_SEND);
-    if (iResult == SOCKET_ERROR) {
-        printf("shutdown failed with error: %d\n", WSAGetLastError());
-        closesocket(ClientSocket);
-        WSACleanup();
-    }
 
-    // cleanup
-    closesocket(ClientSocket);
+    // shutdown the connections since we're done
+    for (auto client : clientList)
+    {
+        iResult = shutdown(client, SD_SEND);
+        if (iResult == SOCKET_ERROR) {
+            printf("shutdown failed with error: %d\n", WSAGetLastError());
+            closesocket(client);
+        }
+    }
     WSACleanup();
 };
 
 int ServerHost::socketSetup() {
     // Initialize Winsock
-        iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
@@ -91,21 +90,20 @@ int ServerHost::socketSetup() {
 }
 
 
-
+// Accept a new client
 int __cdecl ServerHost::host()
 {
-    // Accept two client socket
     while (clientList.size() < 1)
     {
-        ClientSocket = accept(ListenSocket, NULL, NULL);
-        if (ClientSocket == INVALID_SOCKET) {
+        SOCKET tempClientSocket = accept(ListenSocket, NULL, NULL);
+        if (tempClientSocket == INVALID_SOCKET) {
             printf("accept failed with error: %d\n", WSAGetLastError());
             closesocket(ListenSocket);
             WSACleanup();
             return 1;
         }
         else {
-            clientList.push_back(ClientSocket);
+            clientList.push_back(tempClientSocket);
         }
     }
     hosting = true;
@@ -113,7 +111,12 @@ int __cdecl ServerHost::host()
     return 0;
 }
 
-int ServerHost::reiceveFrom(SOCKET* client) {
+int ServerHost::recieveFrom(SOCKET* client) {
+
+    // Getting the size of the message we need to read
+    int dataSize;
+    recv(*client, dataSize)
+
     iResult = recv(*client, recvbuf, recvbuflen, 0);
     if (iResult > 0) {
         printf("Bytes received: %d\n", iResult);
@@ -126,8 +129,6 @@ int ServerHost::reiceveFrom(SOCKET* client) {
     else {
         printf("recv failed with error: %d\n", WSAGetLastError());
         //closesocket(*client);
-        WSACleanup();
-        return 1;
     }
 }
 
@@ -136,8 +137,6 @@ int ServerHost::sendTo(SOCKET* client) {
     if (iSendResult == SOCKET_ERROR) {
         printf("send failed with error: %d\n", WSAGetLastError());
         //closesocket(clientList[i]);
-        WSACleanup();
-        return 1;
     }
     printf("Bytes sent: %d\n", iSendResult);
 }

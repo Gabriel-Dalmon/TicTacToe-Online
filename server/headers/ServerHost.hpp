@@ -15,22 +15,29 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "6942"
 
+// Header's sizes for fixed client-requests
+#define DEFAULT_HEADSIZE 1
+
 
 class ServerHost {
 public:
 	ServerHost();
 	~ServerHost();
 
+	// Network related functions
 	int host();
 	int socketSetup();
-	int reiceveFrom(SOCKET* client);
+	int recieveFrom(SOCKET* client);
 	int sendTo(SOCKET* client);
+
+	// Game-logic related functions
+	bool isMoveValid();
 
 	WSADATA wsaData;
 	int iResult;
 
 	SOCKET ListenSocket;
-	SOCKET ClientSocket;
+	std::vector<SOCKET> clientList;
 
 	struct addrinfo* result = NULL;
 	struct addrinfo hints;
@@ -40,7 +47,6 @@ public:
 	int recvbuflen;
 
 	bool hosting;
-	std::vector<SOCKET> clientList;
 
 	int gridState[9];
 };
