@@ -14,11 +14,12 @@ int main(int argc, char** argv)
     //GameLoop
     while (GameManager::instance().getWindow()->getSFMLObject()->isOpen())
     {
+
         //UPDATE
         GameManager::instance().update();
 
-        //DISPLAY
-        GameManager::instance().render();
+        //renvoie
+        //GameManager::instance().render();
 
     }
 

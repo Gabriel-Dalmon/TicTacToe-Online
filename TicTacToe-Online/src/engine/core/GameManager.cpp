@@ -38,7 +38,8 @@ void GameManager::render()
 void GameManager::update()
 {
     this->updateDeltaTime();
-    this->eventsManager->handleSFMLEvents();
+    //this->eventsManager->handleSFMLEvents();
+    this->receiveEvent();
     this->gameState->update(this->deltaTime);
 }
 

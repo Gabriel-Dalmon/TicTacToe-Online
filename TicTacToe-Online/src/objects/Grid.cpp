@@ -80,4 +80,3 @@ WinDirection Grid::isMoveWinning()
 	}
 	return WinDirection::NOT_WINNING;
 }
-

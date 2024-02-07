@@ -18,6 +18,6 @@ void PauseGameState::render(Window* window)
 
 void PauseGameState::unpauseState() {
 	GameManager::instance().getEventsManager()->unsubscribe(KEY_ESCAPE_PRESSED, new MethodCommand<PauseGameState>(this, &PauseGameState::unpauseState));
-	GameManager::instance().switchGameState(this->pauseGameState);
+	GameManager::instance().switchGameState(this->pauseGameState);	
 	GameManager::instance().getGameState()->enter();
 }

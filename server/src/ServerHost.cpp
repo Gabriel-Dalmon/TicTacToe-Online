@@ -38,7 +38,7 @@ ServerHost::~ServerHost() {
 
 int ServerHost::socketSetup() {
     // Initialize Winsock
-        iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
@@ -91,10 +91,21 @@ int ServerHost::socketSetup() {
 }
 
 
+#define WM_SOCKET WM_USER + 1
+#define MAX_LOADSTRING 100
+LPCSTR szTitle[MAX_LOADSTRING];                  // Texte de la barre de titre
+LPCSTR szWindowClass[MAX_LOADSTRING];            // nom de la classe de fenêtre principale
+HINSTANCE hInstance;
 
 int __cdecl ServerHost::host()
 {
-    // Accept two client socket
+    HWND Window;
+    Window = CreateWindowA(*szWindowClass, *szTitle, WS_OVERLAPPEDWINDOW,
+        CW_USEDEFAULT, 100, CW_USEDEFAULT, 100, nullptr, nullptr, hInstance, nullptr);
+    WSAAsyncSelect(ListenSocket, Window, WM_SOCKET, FD_ACCEPT | FD_CLOSE);
+    ShowWindow(Window, SW_SHOW);
+
+     //Accept two client socket
     while (clientList.size() < 1)
     {
         ClientSocket = accept(ListenSocket, NULL, NULL);
@@ -109,6 +120,8 @@ int __cdecl ServerHost::host()
         }
     }
     hosting = true;
+
+    
 
     return 0;
 }
@@ -140,4 +153,9 @@ int ServerHost::sendTo(SOCKET* client) {
         return 1;
     }
     printf("Bytes sent: %d\n", iSendResult);
+}
+
+void ServerHost::tick() {
+    reiceveFrom(&clientList[0]);
+    sendTo(&clientList[0]);
 }

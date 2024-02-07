@@ -1,6 +1,7 @@
 #undef UNICODE
 
 #define WIN32_LEAN_AND_MEAN
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <windows.h>
 #include <winsock2.h>
@@ -10,6 +11,8 @@
 #include <iostream>
 #include <typeinfo>
 #include <vector>
+#include <WS2tcpip.h>
+#include <windows.h>
 
 #pragma comment (lib, "Ws2_32.lib")
 #define DEFAULT_BUFLEN 512
@@ -25,6 +28,7 @@ public:
 	int socketSetup();
 	int reiceveFrom(SOCKET* client);
 	int sendTo(SOCKET* client);
+	void tick();
 
 	WSADATA wsaData;
 	int iResult;
