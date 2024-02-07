@@ -23,6 +23,8 @@ public:
 
 	int host();
 	int socketSetup();
+	int reiceveFrom(SOCKET* client);
+	int sendTo(SOCKET* client);
 
 	WSADATA wsaData;
 	int iResult;
@@ -39,4 +41,6 @@ public:
 
 	bool hosting;
 	std::vector<SOCKET> clientList;
+
+	int gridState[9];
 };
