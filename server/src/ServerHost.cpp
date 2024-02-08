@@ -91,20 +91,10 @@ int ServerHost::socketSetup() {
 }
 
 
-#define WM_SOCKET WM_USER + 1
-#define MAX_LOADSTRING 100
-LPCSTR szTitle[MAX_LOADSTRING];                  // Texte de la barre de titre
-LPCSTR szWindowClass[MAX_LOADSTRING];            // nom de la classe de fenêtre principale
-HINSTANCE hInstance;
+
 
 int __cdecl ServerHost::host()
 {
-    HWND Window;
-    Window = CreateWindowA(*szWindowClass, *szTitle, WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, 100, CW_USEDEFAULT, 100, nullptr, nullptr, hInstance, nullptr);
-    WSAAsyncSelect(ListenSocket, Window, WM_SOCKET, FD_ACCEPT | FD_CLOSE);
-    ShowWindow(Window, SW_SHOW);
-
      //Accept two client socket
     while (clientList.size() < 1)
     {

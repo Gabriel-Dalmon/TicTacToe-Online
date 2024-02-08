@@ -23,7 +23,7 @@
 
 #define DEFAULT_BUFLEN 132
 #define DEFAULT_PORT "6942"
-#define SERVER_IP "10.1.144.23"//"10.1.144.23" // 192.168.56.1 // 
+#define SERVER_IP "10.1.171.45"//"10.1.144.23" // 192.168.56.1 // 
 
 int __cdecl main(int argc, char** argv)
 {
