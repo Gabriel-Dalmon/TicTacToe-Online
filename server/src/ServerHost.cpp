@@ -111,28 +111,53 @@ int __cdecl ServerHost::host()
     return 0;
 }
 
-int ServerHost::recieveFrom(SOCKET* client) {
+void ServerHost::recieveFrom(SOCKET* client) {
 
-    // Getting the size of the message we need to read
-    int dataSize;
-    recv(*client, dataSize)
-
-    iResult = recv(*client, recvbuf, recvbuflen, 0);
-    if (iResult > 0) {
-        printf("Bytes received: %d\n", iResult);
-        std::cout << recvbuf << std::endl;
+    // Getting the size of the message we need to read as char* (which are as good as unsigned char* at representing Bytes)
+    char headerSize[DEFAULT_HEADSIZE];
+    iResult = recv(*client, headerSize, DEFAULT_HEADSIZE, 0);   // Stores every Byte determining the message's size in headerSize
+    if (iResult > 0)
+    {
+        printf("Bytes read: %d\n", iResult);
+        std::cout << "Here is headerSize as char : " << (char)headerSize << "\n";
     }
-    else if (iResult == 0) {
+    else if (iResult == 0)
+    {
         printf("Message empty\n");
-        Sleep(1000);
     }
-    else {
+    else
+    {
         printf("recv failed with error: %d\n", WSAGetLastError());
         //closesocket(*client);
     }
+    
+    // Transforming the char* headerSize "Bytes" into an integer usable again by recv()
+    int dataBufferSize = 0;
+    for (int i = 0;  i < DEFAULT_HEADSIZE;  i++)
+    {
+        printf("   /!\\ Entering for() loop ! Iteration number %d", i + 1);
+        dataBufferSize |= headerSize[i] << i * 8;
+        printf("      dataBufferSize is now %08X\n", dataBufferSize);
+    }
+
+    printf("\nfor() loop exited ! dataBufferSize is now 0x%08X, or %d", dataBufferSize, dataBufferSize);
+
+    //iResult = recv(*client, recvbuf, dataBufferSize, 0);
+    //if (iResult > 0) {
+    //    printf("Bytes received: %d\n", iResult);
+    //    std::cout << recvbuf << std::endl;
+    //}
+    //else if (iResult == 0) {
+    //    printf("Message empty\n");
+    //    Sleep(1000);
+    //}
+    //else {
+    //    printf("recv failed with error: %d\n", WSAGetLastError());
+    //    //closesocket(*client);
+    //}
 }
 
-int ServerHost::sendTo(SOCKET* client) {
+void ServerHost::sendTo(SOCKET* client) {
     iSendResult = send(*client, recvbuf, iResult, 0);
     if (iSendResult == SOCKET_ERROR) {
         printf("send failed with error: %d\n", WSAGetLastError());

@@ -16,7 +16,7 @@
 #define DEFAULT_PORT "6942"
 
 // Header's sizes for fixed client-requests
-#define DEFAULT_HEADSIZE 1
+#define DEFAULT_HEADSIZE 4
 
 
 class ServerHost {
@@ -27,8 +27,8 @@ public:
 	// Network related functions
 	int host();
 	int socketSetup();
-	int recieveFrom(SOCKET* client);
-	int sendTo(SOCKET* client);
+	void recieveFrom(SOCKET* client);
+	void sendTo(SOCKET* client);
 
 	// Game-logic related functions
 	bool isMoveValid();
