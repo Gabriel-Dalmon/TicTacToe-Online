@@ -5,12 +5,19 @@ namespace std {
 }
 
 
-// gloabal defines
+// gloabal macro
 #define WIN32_LEAN_AND_MEAN
 
 #define WM_SOCKET                               (WM_USER + 1)
 #define PORT                                    5150
 #define DATA_BUFSIZE                            8192
+#define DEFAULT_HEADERSIZE                        4
+
+enum RequestType
+{
+    setName = 0,
+    makePlay
+};
 
 
 
@@ -23,6 +30,7 @@ typedef struct _SOCKET_INFORMATION {
     DWORD BytesSEND;
     DWORD BytesRECV;
     struct _SOCKET_INFORMATION* Next;
+    Json::Value lastJsonValue;
 } SOCKET_INFORMATION, * LPSOCKET_INFORMATION;
 
 

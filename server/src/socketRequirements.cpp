@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <utility>
 #include <iostream>
+#include <json/json.h>
 
 #include "socketRequirements.hpp"
 
@@ -46,6 +47,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 printf("Socket number %d connected\n", Accept);
                 WSAAsyncSelect(Accept, hwnd, WM_SOCKET, FD_READ | FD_WRITE | FD_CLOSE);
                 break;
+
             case FD_READ:
                 SocketInfo = GetSocketInformation(wParam);
                 // Read data only if the receive buffer is empty
@@ -60,7 +62,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 else
                 {
                     SocketInfo->DataBuf.buf = SocketInfo->Buffer;
-                    SocketInfo->DataBuf.len = DATA_BUFSIZE;
+                    SocketInfo->DataBuf.len = DEFAULT_HEADERSIZE;
                     Flags = 0;
                     if (WSARecv(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes,
                         &Flags, NULL, NULL) == SOCKET_ERROR)
@@ -75,11 +77,58 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     else // No error so update the byte count
                     {
                         printf("WSARecv() is OK!\n");
-                        SocketInfo->BytesRECV = RecvBytes;
+
+                        // Char* to int converter
+                        int dataBufferSize = 0;
+                        for (int i = 0; i < DEFAULT_HEADERSIZE; i++)
+                        {
+                            printf("   /!\\ Entering for() loop ! Iteration number %d", i + 1);
+                            dataBufferSize |= SocketInfo->DataBuf.buf[i] << i * 8;
+                            printf("      dataBufferSize is now %08X\n", dataBufferSize);
+                        }
+
+                        SocketInfo->DataBuf.buf = SocketInfo->Buffer;
+                        SocketInfo->DataBuf.len = dataBufferSize;
+                        Flags = 0;
+                        if (WSARecv(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes,
+                            &Flags, NULL, NULL) == SOCKET_ERROR)
+                        {
+                            if (WSAGetLastError() != WSAEWOULDBLOCK)
+                            {
+                                printf("WSARecv() failed with error %d\n", WSAGetLastError());
+                                FreeSocketInformation(wParam);
+                                return 0;
+                            }
+                        }
+                        else // No error so update the byte count
+                        {
+                                /*
+                                 *  Convertion in the other direction because server is f* cked
+                                 */
+
+                                 // Convertion into std::string so that the Json library can use it
+                            char* recievedData = SocketInfo->DataBuf.buf;
+                            std::string json_data(recievedData);
+
+                            // Parsing the Json data
+                            Json::Value recieveRoot;
+                            JSONCPP_STRING err;
+                            Json::CharReaderBuilder readBuilder;
+                            const std::unique_ptr<Json::CharReader> reader(readBuilder.newCharReader());
+
+                            if (!reader->parse(json_data.c_str(), json_data.c_str() + json_data.length(), &recieveRoot, &err))
+                            {
+                                std::cout << "error" << std::endl;
+                                return 0;
+                            }
+
+                            SocketInfo->lastJsonValue = recieveRoot;
+                        }
                     }
                 }
                 // DO NOT BREAK HERE SINCE WE GOT A SUCCESSFUL RECV. Go ahead
                 // and begin writing data to the client
+
             case FD_WRITE:
                 SocketInfo = GetSocketInformation(wParam);
                 if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
