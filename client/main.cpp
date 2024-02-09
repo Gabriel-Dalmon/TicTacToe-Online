@@ -13,8 +13,8 @@
 #include <iostream>
 #include <conio.h>
 
-// JSON managing librairy bcuz lazy
-//#include <json/json.h>
+// JSON managing librairy
+#include <json/json.h>
 
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
@@ -25,10 +25,16 @@
 
 #define DEFAULT_BUFLEN 1
 #define DEFAULT_PORT "6942"
-#define SERVER_IP "192.168.212.22"//"10.1.144.23" // 192.168.56.1 // 
+#define SERVER_IP "192.168.212.22"
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_HEADSIZE 4
+
+enum RequestType
+{
+    setName = 0,
+    makePlay
+};
 
 int __cdecl main(int argc, char** argv)
 {
@@ -38,23 +44,48 @@ int __cdecl main(int argc, char** argv)
         * ptr = NULL,
         hints;
 
-    // Using the JSON library to create a char* buffer.
-    // This will eventually be sent back to the client, so that they can see the updated board an interact with it
+    /*
+     *  Hopefully Json to char* transformation :P
+     */
+    // Sets the value that are gonna end up in the Json
+    Json::Value root;
+    Json::Value request(setName);
+    Json::Value reqData("Jose");
 
+    // Fills up the Json
+    root["request"] = request;
+    root["reqData"] = reqData;
+
+    // Converts the Json from std::string to const char*
+    Json::StreamWriterBuilder builder;
+    std::string tempStr = Json::writeString(builder, root);
+    const char* jsonMsg = tempStr.c_str();
+    printf("jsonMsg : %s\n", jsonMsg);
+
+
+
+
+
+    /*
+     *  This big block of code take a char* variable, and uses it's size as well as 2 constants to pack it into 1 char* usuable by msdn::send()
+     *  The 2 constants used are to define the max size of the message that will be sent, as well as the fix size of the header to read the data
+     *  At 4, the header is the size of one(1) int. The size of the message is expressed in Bytes.
+     * 
+     *  Once the Json format will be in place, this block will work assuming we're dealing with the constant amount of Byte defined above on both client and server side
+     */
     char sendbuf[DEFAULT_BUFLEN] = "";
-    const char* msg = "Hello World!";
-    // Fills snedbuf with the size of the message to send as an int, into the char* so that send() can work with it.
+    // Fills sendbuf with the size of the message to send as an int, into the char* so that send() can work with it.
     printf("sendbuf : \n");
     for (int i = 0; i < DEFAULT_HEADSIZE; i++)
     {
-        sendbuf[i] = strlen(msg) >> (DEFAULT_HEADSIZE - 1 - i) * 8;
+        sendbuf[i] = strlen(jsonMsg) >> (DEFAULT_HEADSIZE - 1 - i) * 8;
         printf("\t[%d] = %02X, or %c\n", i, sendbuf[i], sendbuf[i]);
     }
-
     // Fills manually sendbuf with the rest of the message
-    for (int i = DEFAULT_HEADSIZE;  i < strlen(msg) + DEFAULT_HEADSIZE;  i++)
+    // C/C++ default concatenators fail here because we are often dealing with '\0', hence the manual option
+    for (int i = DEFAULT_HEADSIZE;  i < strlen(jsonMsg) + DEFAULT_HEADSIZE;  i++)
     {
-        sendbuf[i] = msg[i - DEFAULT_HEADSIZE];
+        sendbuf[i] = jsonMsg[i - DEFAULT_HEADSIZE];
         printf("\t[%d] = %02X, or %c\n", i, sendbuf[i], sendbuf[i]);
     }
 

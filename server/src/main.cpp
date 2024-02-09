@@ -19,6 +19,12 @@
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_PORT "6942"
 
+enum RequestType
+{
+	setName = 0,
+	makePlay
+};
+
 int __cdecl main(void)
 {
 	ServerHost host;
