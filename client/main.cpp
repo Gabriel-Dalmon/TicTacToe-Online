@@ -1,4 +1,5 @@
 #define WIN32_LEAN_AND_MEAN
+#define _CRT_SECURE_NO_WARNINGS
 
 // Include windows librairies for socket nonsense
 #include <windows.h>
@@ -10,6 +11,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <iostream>
+#include <conio.h>
 
 // JSON managing librairy bcuz lazy
 //#include <json/json.h>
@@ -21,16 +23,15 @@
 #pragma comment (lib, "AdvApi32.lib")
 
 
-#define DEFAULT_BUFLEN 132
+#define DEFAULT_BUFLEN 1
 #define DEFAULT_PORT "6942"
-#define SERVER_IP "10.1.144.23"//"10.1.144.23" // 192.168.56.1 // 
+#define SERVER_IP "192.168.212.22"//"10.1.144.23" // 192.168.56.1 // 
+
+#define DEFAULT_BUFLEN 512
+#define DEFAULT_HEADSIZE 4
 
 int __cdecl main(int argc, char** argv)
 {
-
-
-    
-
     WSADATA wsaData;
     SOCKET ConnectSocket = INVALID_SOCKET;
     struct addrinfo* result = NULL,
@@ -39,10 +40,31 @@ int __cdecl main(int argc, char** argv)
 
     // Using the JSON library to create a char* buffer.
     // This will eventually be sent back to the client, so that they can see the updated board an interact with it
-    //Json::Value root;
-    std::ifstream grid_snipet("game_snipet.json", std::ifstream::binary);
 
-    const char* sendbuf = "this is NOT a test";
+    char sendbuf[DEFAULT_BUFLEN] = "";
+    const char* msg = "Hello World!";
+    // Fills snedbuf with the size of the message to send as an int, into the char* so that send() can work with it.
+    printf("sendbuf : \n");
+    for (int i = 0; i < DEFAULT_HEADSIZE; i++)
+    {
+        sendbuf[i] = strlen(msg) >> (DEFAULT_HEADSIZE - 1 - i) * 8;
+        printf("\t[%d] = %02X, or %c\n", i, sendbuf[i], sendbuf[i]);
+    }
+
+    // Fills manually sendbuf with the rest of the message
+    for (int i = DEFAULT_HEADSIZE;  i < strlen(msg) + DEFAULT_HEADSIZE;  i++)
+    {
+        sendbuf[i] = msg[i - DEFAULT_HEADSIZE];
+        printf("\t[%d] = %02X, or %c\n", i, sendbuf[i], sendbuf[i]);
+    }
+
+
+
+
+
+
+
+    //const char* sendbuf = json_file.c_str();
     char recvbuf[DEFAULT_BUFLEN];
     int iResult;
     int recvbuflen = DEFAULT_BUFLEN;
@@ -107,6 +129,12 @@ int __cdecl main(int argc, char** argv)
     {
         printf("Connected to %s\n", &SERVER_IP);
     }
+
+    //// Asks for where the player want to play
+    //printf("Wanna break from the ads ? ");
+    //char input;
+    //input = _getch();
+    //sendbuf = &input;
 
     // Send an initial buffer
     iResult = send(ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
