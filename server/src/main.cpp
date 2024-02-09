@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <typeinfo>
+#include <conio.h>
 
 #include "ServerHost.hpp"
 
@@ -29,4 +30,14 @@ int __cdecl main(void)
 {
 	ServerHost host;
 	host.host();
+
+	while (true)
+	{
+		host.recieveFrom(&host.ListenSocket);
+	}
+
+	// Asks for where the player want to play
+	printf("\n\nWanna break from the ads ? ");
+	char input;
+	input = _getch();
 }

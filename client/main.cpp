@@ -25,7 +25,7 @@
 
 #define DEFAULT_BUFLEN 1
 #define DEFAULT_PORT "6942"
-#define SERVER_IP "192.168.212.22"
+#define SERVER_IP "10.1.1.252"
 
 #define DEFAULT_BUFLEN 512
 #define DEFAULT_HEADSIZE 4
@@ -48,17 +48,17 @@ int __cdecl main(int argc, char** argv)
      *  Hopefully Json to char* transformation :P
      */
     // Sets the value that are gonna end up in the Json
-    Json::Value root;
+    Json::Value sendRoot;
     Json::Value request(setName);
     Json::Value reqData("Jose");
 
     // Fills up the Json
-    root["request"] = request;
-    root["reqData"] = reqData;
+    sendRoot["request"] = request;
+    sendRoot["reqData"] = reqData;
 
     // Converts the Json from std::string to const char*
-    Json::StreamWriterBuilder builder;
-    std::string tempStr = Json::writeString(builder, root);
+    Json::StreamWriterBuilder writeBuilder;
+    std::string tempStr = Json::writeString(writeBuilder, sendRoot);
     const char* jsonMsg = tempStr.c_str();
     printf("jsonMsg : %s\n", jsonMsg);
 
@@ -79,32 +79,51 @@ int __cdecl main(int argc, char** argv)
     for (int i = 0; i < DEFAULT_HEADSIZE; i++)
     {
         sendbuf[i] = strlen(jsonMsg) >> (DEFAULT_HEADSIZE - 1 - i) * 8;
-        printf("\t[%d] = %02X, or %c\n", i, sendbuf[i], sendbuf[i]);
+        printf("%02X", sendbuf[i]);
     }
     // Fills manually sendbuf with the rest of the message
     // C/C++ default concatenators fail here because we are often dealing with '\0', hence the manual option
     for (int i = DEFAULT_HEADSIZE;  i < strlen(jsonMsg) + DEFAULT_HEADSIZE;  i++)
     {
         sendbuf[i] = jsonMsg[i - DEFAULT_HEADSIZE];
-        printf("\t[%d] = %02X, or %c\n", i, sendbuf[i], sendbuf[i]);
+        printf("%c", sendbuf[i]);
+    }
+
+
+    /* 
+     *  Convertion in the other direction because server is f* cked
+     */
+
+    // Convertion into std::string so that the Json library can use it
+    const char* recievedData = "{ \"request\" : 0, \"reqData\" : \"Jose\" }";
+    std::string json_data(recievedData);
+
+    // Parsing the Json data
+    Json::Value recieveRoot;
+    JSONCPP_STRING err;
+    Json::CharReaderBuilder readBuilder;
+    const std::unique_ptr<Json::CharReader> reader(readBuilder.newCharReader());
+    if (!reader->parse(json_data.c_str(), json_data.c_str() + json_data.length(), &recieveRoot, &err))
+    {
+        std::cout << "error" << std::endl;
+    }
+
+    // Extracting the data
+    switch (recieveRoot["request"].asInt())
+    {
+    case setName:
+        printf("\n\tWe should set the name with %s\n", recieveRoot["reqData"].asCString());
+        break;
+    case makePlay:
+        printf("\n\tWe should set the name with %s\n", recieveRoot["reqData"].asInt());
+        break;
     }
 
 
 
-
-
-
-
-    //const char* sendbuf = json_file.c_str();
     char recvbuf[DEFAULT_BUFLEN];
     int iResult;
     int recvbuflen = DEFAULT_BUFLEN;
-
-    // Validate the parameters
-    /*if (argc != 2) {
-        printf("usage: %s server-name\n", argv[0]);
-        return 1;
-    }*/
 
     // Initialize Winsock
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -112,6 +131,8 @@ int __cdecl main(int argc, char** argv)
         printf("WSAStartup failed with error: %d\n", iResult);
         return 1;
     }
+    else
+        printf("Winsock Initialized !\n");
 
     ZeroMemory(&hints, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
@@ -125,6 +146,8 @@ int __cdecl main(int argc, char** argv)
         WSACleanup();
         return 1;
     }
+    else
+        printf("getaddrinfo passed !\n");
 
     // Attempt to connect to an address until one succeeds
     for (ptr = result; ptr != NULL; ptr = ptr->ai_next) {
@@ -137,6 +160,8 @@ int __cdecl main(int argc, char** argv)
             WSACleanup();
             return 1;
         }
+        else
+            printf("Client socket cooked :3\n");
 
         // Connect to server.
         iResult = connect(ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
@@ -161,12 +186,6 @@ int __cdecl main(int argc, char** argv)
         printf("Connected to %s\n", &SERVER_IP);
     }
 
-    //// Asks for where the player want to play
-    //printf("Wanna break from the ads ? ");
-    //char input;
-    //input = _getch();
-    //sendbuf = &input;
-
     // Send an initial buffer
     iResult = send(ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
     if (iResult == SOCKET_ERROR) {
@@ -177,6 +196,12 @@ int __cdecl main(int argc, char** argv)
     }
 
     printf("Bytes Sent: %ld\n", iResult);
+
+
+    // Asks for where the player want to play
+    printf("\n\nWanna break from the ads ? ");
+    char input;
+    input = _getch();
 
     // shutdown the connection since no more data will be sent
     iResult = shutdown(ConnectSocket, SD_SEND);
