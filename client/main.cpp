@@ -22,8 +22,8 @@
 
 
 #define DEFAULT_BUFLEN 132
-#define DEFAULT_PORT "6942"
-#define SERVER_IP "10.1.171.45"//"10.1.144.23" // 192.168.56.1 // 
+#define DEFAULT_PORT "5150"
+#define SERVER_IP "10.1.144.23"//"10.1.144.23" // 192.168.56.1 // 
 
 int __cdecl main(int argc, char** argv)
 {
@@ -120,13 +120,13 @@ int __cdecl main(int argc, char** argv)
     printf("Bytes Sent: %ld\n", iResult);
 
     // shutdown the connection since no more data will be sent
-    iResult = shutdown(ConnectSocket, SD_SEND);
+    /*iResult = shutdown(ConnectSocket, SD_SEND);
     if (iResult == SOCKET_ERROR) {
         printf("shutdown failed with error: %d\n", WSAGetLastError());
         closesocket(ConnectSocket);
         WSACleanup();
         return 1;
-    }
+    }*/
 
     // Receive until the peer closes the connection
     do {

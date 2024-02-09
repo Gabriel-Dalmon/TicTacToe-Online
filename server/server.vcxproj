@@ -132,10 +132,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\ServerHost.cpp" />
+    <ClCompile Include="src\socketRequirements.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="headers\ServerHost.hpp" />
+    <ClInclude Include="headers\socketRequirements.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
