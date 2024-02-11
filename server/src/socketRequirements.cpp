@@ -6,21 +6,20 @@
 #include <utility>
 #include <iostream>
 #include <json/json.h>
+#include <process.h>
 
 #include "socketRequirements.hpp"
 
 
-
+HANDLE  handleThreads[MAX_THREADS] = { NULL };
+int threadNumber = 0;
 LPSOCKET_INFORMATION SocketInfoList;
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 {
-    SOCKET Accept;
-    LPSOCKET_INFORMATION SocketInfo;
-    DWORD RecvBytes;
-    DWORD SendBytes;
-    DWORD Flags;
+    LPREQUEST_DATA requestArgs = CreateNewRequestArgs(wParam);
+    
     if (uMsg == WM_SOCKET)
     {
         if (WSAGETSELECTERROR(lParam))
@@ -35,7 +34,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
             case FD_ACCEPT:
                 //printf("FD_ACCEPT Called");
-                if ((Accept = accept(wParam, NULL, NULL)) == INVALID_SOCKET)
+                if ((*requestArgs->Accept = accept(wParam, NULL, NULL)) == INVALID_SOCKET)
                 {
                     printf("accept() failed with error %d\n", WSAGetLastError());
                     break;
@@ -43,129 +42,53 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 else
                     printf("accept() is OK!\n");
                 // Create a socket information structure to associate with the socket for processing I/O
-                CreateSocketInformation(Accept);
-                printf("Socket number %d connected\n", Accept);
-                WSAAsyncSelect(Accept, hwnd, WM_SOCKET, FD_READ | FD_WRITE | FD_CLOSE);
+                CreateSocketInformation(*requestArgs->Accept);
+                printf("Socket number %d connected\n", *requestArgs->Accept);
+                WSAAsyncSelect(*requestArgs->Accept, hwnd, WM_SOCKET, FD_READ | FD_WRITE | FD_CLOSE);
                 break;
 
             case FD_READ:
-                SocketInfo = GetSocketInformation(wParam);
-                // Read data only if the receive buffer is empty
-                if (SocketInfo == NULL) {
-                    break;
-                }
-                if (SocketInfo->BytesRECV != 0)
-                {
-                    SocketInfo->RecvPosted = TRUE;
-                    return 0;
-                }
-                else
-                {
-                    SocketInfo->DataBuf.buf = SocketInfo->Buffer;
-                    SocketInfo->DataBuf.len = DEFAULT_HEADERSIZE;
-                    Flags = 0;
-                    if (WSARecv(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes,
-                        &Flags, NULL, NULL) == SOCKET_ERROR)
-                    {
-                        if (WSAGetLastError() != WSAEWOULDBLOCK)
-                        {
-                            printf("WSARecv() failed with error %d\n", WSAGetLastError());
-                            FreeSocketInformation(wParam);
-                            return 0;
-                        }
-                    }
-                    else // No error so update the byte count
-                    {
-                        printf("WSARecv() is OK!\n");
-
-                        // Char* to int converter
-                        int dataBufferSize = 0;
-                        for (int i = 0; i < DEFAULT_HEADERSIZE; i++)
-                        {
-                            printf("   /!\\ Entering for() loop ! Iteration number %d", i + 1);
-                            dataBufferSize |= SocketInfo->DataBuf.buf[i] << i * 8;
-                            printf("      dataBufferSize is now %08X\n", dataBufferSize);
-                        }
-
-                        SocketInfo->DataBuf.buf = SocketInfo->Buffer;
-                        SocketInfo->DataBuf.len = dataBufferSize;
-                        Flags = 0;
-                        if (WSARecv(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes,
-                            &Flags, NULL, NULL) == SOCKET_ERROR)
-                        {
-                            if (WSAGetLastError() != WSAEWOULDBLOCK)
-                            {
-                                printf("WSARecv() failed with error %d\n", WSAGetLastError());
-                                FreeSocketInformation(wParam);
-                                return 0;
-                            }
-                        }
-                        else // No error so update the byte count
-                        {
-                                /*
-                                 *  Convertion in the other direction because server is f* cked
-                                 */
-
-                                 // Convertion into std::string so that the Json library can use it
-                            char* recievedData = SocketInfo->DataBuf.buf;
-                            std::string json_data(recievedData);
-
-                            // Parsing the Json data
-                            Json::Value recieveRoot;
-                            JSONCPP_STRING err;
-                            Json::CharReaderBuilder readBuilder;
-                            const std::unique_ptr<Json::CharReader> reader(readBuilder.newCharReader());
-
-                            if (!reader->parse(json_data.c_str(), json_data.c_str() + json_data.length(), &recieveRoot, &err))
-                            {
-                                std::cout << "error" << std::endl;
-                                return 0;
-                            }
-
-                            SocketInfo->lastJsonValue = recieveRoot;
-                        }
-                    }
-                }
-                // DO NOT BREAK HERE SINCE WE GOT A SUCCESSFUL RECV. Go ahead
-                // and begin writing data to the client
-
+                threadNumber++;
+                handleThreads[threadNumber] = (HANDLE)_beginthread((_beginthread_proc_type)ReadRequest, 0, (void*)requestArgs);
+                
+                // readRequest(LPSOCKET_INFORMATION* SocketInfo, WPARAM* wParam, DWORD* RecvBytes, DWORD* Flags)
             case FD_WRITE:
-                SocketInfo = GetSocketInformation(wParam);
-                if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
-                {
-                    SocketInfo->DataBuf.buf = SocketInfo->Buffer + SocketInfo->BytesSEND;
-                    SocketInfo->DataBuf.len = SocketInfo->BytesRECV - SocketInfo->BytesSEND;
-                    if (WSASend(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &SendBytes, 0,
-                        NULL, NULL) == SOCKET_ERROR)
-                    {
-                        if (WSAGetLastError() != WSAEWOULDBLOCK)
-                        {
-                            printf("WSASend() failed with error %d\n", WSAGetLastError());
-                            FreeSocketInformation(wParam);
-                            return 0;
-                        }
-                    }
-                    else // No error so update the byte count
-                    {
-                        printf("WSASend() is OK!\n");
-                        SocketInfo->BytesSEND += SendBytes;
-                    }
-                }
-                if (SocketInfo->BytesSEND == SocketInfo->BytesRECV)
-                {
-                    SocketInfo->BytesSEND = 0;
-                    SocketInfo->BytesRECV = 0;
-                    // If a RECV occurred during our SENDs then we need to post an FD_READ notification on the socket
-                    if (SocketInfo->RecvPosted == TRUE)
-                    {
-                        SocketInfo->RecvPosted = FALSE;
+                //SocketInfo = GetSocketInformation(wParam);
+                //if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
+                //{
+                //    SocketInfo->DataBuf.buf = SocketInfo->Buffer + SocketInfo->BytesSEND;
+                //    SocketInfo->DataBuf.len = SocketInfo->BytesRECV - SocketInfo->BytesSEND;
+                //    if (WSASend(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &SendBytes, 0,
+                //        NULL, NULL) == SOCKET_ERROR)
+                //    {
+                //        if (WSAGetLastError() != WSAEWOULDBLOCK)
+                //        {
+                //            printf("WSASend() failed with error %d\n", WSAGetLastError());
+                //            FreeSocketInformation(wParam);
+                //            return 0;
+                //        }
+                //    }
+                //    else // No error so update the byte count
+                //    {
+                //        printf("WSASend() is OK!\n");
+                //        SocketInfo->BytesSEND += SendBytes;
+                //    }
+                //}
+                //if (SocketInfo->BytesSEND == SocketInfo->BytesRECV)
+                //{
+                //    SocketInfo->BytesSEND = 0;
+                //    SocketInfo->BytesRECV = 0;
+                //    // If a RECV occurred during our SENDs then we need to post an FD_READ notification on the socket
+                //    if (SocketInfo->RecvPosted == TRUE)
+                //    {
+                //        SocketInfo->RecvPosted = FALSE;
 
-                        //PostMessage(hwnd, WM_SOCKET, wParam, FD_READ);
-                    }
-                }
-                //PostMessage(hwnd, WM_SOCKET, wParam, FD_WRITE);
-                std::cout << "hey there" << std::endl;
-                break;
+                //        //PostMessage(hwnd, WM_SOCKET, wParam, FD_READ);
+                //    }
+                //}
+                ////PostMessage(hwnd, WM_SOCKET, wParam, FD_WRITE);
+                //std::cout << "hey there" << std::endl;
+                //break;
 
             case FD_CLOSE:
 
@@ -396,4 +319,113 @@ std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsaData) {
     }
 
     return std::pair<SOCKET, HWND>(Listen, Window);
+};
+
+
+// Create a list of arguments needed for the callback
+LPREQUEST_DATA CreateNewRequestArgs(WPARAM wParam){
+
+    // We allocate these in the heap so they persist for threads to use
+    LPREQUEST_DATA requestArgs = (LPREQUEST_DATA)malloc(sizeof(REQUEST_DATA));
+    SOCKET* Accept = (SOCKET*)malloc(sizeof(SOCKET));
+    LPSOCKET_INFORMATION SocketInfo = (LPSOCKET_INFORMATION)malloc(sizeof(LPSOCKET_INFORMATION)); // #todo /!\ peut poser souci (remplacer par SOCKET_INFORMATION dans le SIZEOF)
+    DWORD RecvBytes;
+    DWORD SendBytes;
+    DWORD Flags;
+
+    requestArgs->Accept = Accept;
+    requestArgs->SocketInfo = SocketInfo;
+    requestArgs->RecvBytes = RecvBytes;
+    requestArgs->SendBytes = SendBytes;
+    requestArgs->Flags = Flags;
+    requestArgs->wParam = wParam;
+    return requestArgs;
+}
+
+void FreeRequestArgs(LPREQUEST_DATA requestArgs) {
+    free(requestArgs->Accept);
+    free(requestArgs->SocketInfo);
+    free(requestArgs);
+}
+
+
+//int ReadRequest(LPSOCKET_INFORMATION* SocketInfo, WPARAM* wParam, DWORD* RecvBytes, DWORD* Flags) {
+int ReadRequest(LPREQUEST_DATA requestArgs) {
+    requestArgs->SocketInfo = GetSocketInformation(requestArgs->wParam);
+    // Read data only if the receive buffer is empty
+    if (requestArgs->SocketInfo == NULL) {
+        return -1; // if return -1 : break
+    }
+    if (requestArgs->SocketInfo->BytesRECV != 0)
+    {
+        requestArgs->SocketInfo->RecvPosted = TRUE;
+        return 0;
+    }
+    else
+    {
+        requestArgs->SocketInfo->DataBuf.buf = requestArgs->SocketInfo->Buffer;
+        requestArgs->SocketInfo->DataBuf.len = DEFAULT_HEADERSIZE;
+        requestArgs->Flags = 0;
+        if (WSARecv(requestArgs->SocketInfo->Socket, &(requestArgs->SocketInfo->DataBuf), 1, &requestArgs->RecvBytes,
+            &requestArgs->Flags, NULL, NULL) == SOCKET_ERROR)
+        {
+            if (WSAGetLastError() != WSAEWOULDBLOCK)
+            {
+                printf("WSARecv() failed with error %d\n", WSAGetLastError());
+                FreeSocketInformation(requestArgs->wParam);
+                return 0;
+            }
+        }
+        else // No error so update the byte count
+        {
+            printf("WSARecv() is OK!\n");
+
+            // Char* to int converter
+            int dataBufferSize = 0;
+            for (int i = 0; i < DEFAULT_HEADERSIZE; i++)
+            {
+                printf("   /!\\ Entering for() loop ! Iteration number %d", i + 1);
+                dataBufferSize |= requestArgs->SocketInfo->DataBuf.buf[i] << i * 8;
+                printf("      dataBufferSize is now %08X\n", dataBufferSize);
+            }
+
+            requestArgs->SocketInfo->DataBuf.buf = requestArgs->SocketInfo->Buffer;
+            requestArgs->SocketInfo->DataBuf.len = dataBufferSize;
+            requestArgs->Flags = 0;
+            if (WSARecv(requestArgs->SocketInfo->Socket, &(requestArgs->SocketInfo->DataBuf), 1, &requestArgs->RecvBytes,
+                &requestArgs->Flags, NULL, NULL) == SOCKET_ERROR)
+            {
+                if (WSAGetLastError() != WSAEWOULDBLOCK)
+                {
+                    printf("WSARecv() failed with error %d\n", WSAGetLastError());
+                    FreeSocketInformation(requestArgs->wParam);
+                    return 0;
+                }
+            }
+            else // No error so update the byte count
+            {
+                /*
+                 *  Convertion in the other direction because server is f* cked
+                 */
+
+                 // Convertion into std::string so that the Json library can use it
+                char* recievedData = requestArgs->SocketInfo->DataBuf.buf;
+                std::string json_data(recievedData);
+
+                // Parsing the Json data
+                Json::Value recieveRoot;
+                JSONCPP_STRING err;
+                Json::CharReaderBuilder readBuilder;
+                const std::unique_ptr<Json::CharReader> reader(readBuilder.newCharReader());
+
+                if (!reader->parse(json_data.c_str(), json_data.c_str() + json_data.length(), &recieveRoot, &err))
+                {
+                    std::cout << "error" << std::endl;
+                    return 0;
+                }
+
+                requestArgs->SocketInfo->lastJsonValue = recieveRoot;
+            }
+        }
+    }
 }
