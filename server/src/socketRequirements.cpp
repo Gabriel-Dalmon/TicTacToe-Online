@@ -53,42 +53,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 
                 // readRequest(LPSOCKET_INFORMATION* SocketInfo, WPARAM* wParam, DWORD* RecvBytes, DWORD* Flags)
             case FD_WRITE:
-                //SocketInfo = GetSocketInformation(wParam);
-                //if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
-                //{
-                //    SocketInfo->DataBuf.buf = SocketInfo->Buffer + SocketInfo->BytesSEND;
-                //    SocketInfo->DataBuf.len = SocketInfo->BytesRECV - SocketInfo->BytesSEND;
-                //    if (WSASend(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &SendBytes, 0,
-                //        NULL, NULL) == SOCKET_ERROR)
-                //    {
-                //        if (WSAGetLastError() != WSAEWOULDBLOCK)
-                //        {
-                //            printf("WSASend() failed with error %d\n", WSAGetLastError());
-                //            FreeSocketInformation(wParam);
-                //            return 0;
-                //        }
-                //    }
-                //    else // No error so update the byte count
-                //    {
-                //        printf("WSASend() is OK!\n");
-                //        SocketInfo->BytesSEND += SendBytes;
-                //    }
-                //}
-                //if (SocketInfo->BytesSEND == SocketInfo->BytesRECV)
-                //{
-                //    SocketInfo->BytesSEND = 0;
-                //    SocketInfo->BytesRECV = 0;
-                //    // If a RECV occurred during our SENDs then we need to post an FD_READ notification on the socket
-                //    if (SocketInfo->RecvPosted == TRUE)
-                //    {
-                //        SocketInfo->RecvPosted = FALSE;
-
-                //        //PostMessage(hwnd, WM_SOCKET, wParam, FD_READ);
-                //    }
-                //}
-                ////PostMessage(hwnd, WM_SOCKET, wParam, FD_WRITE);
-                //std::cout << "hey there" << std::endl;
-                //break;
+                threadNumber++;
+                handleThreads[threadNumber] = (HANDLE)_beginthread((_beginthread_proc_type)WriteRequest, 0, (void*)requestArgs);
 
             case FD_CLOSE:
 
@@ -399,6 +365,7 @@ int ReadRequest(LPREQUEST_DATA requestArgs) {
                 {
                     printf("WSARecv() failed with error %d\n", WSAGetLastError());
                     FreeSocketInformation(requestArgs->wParam);
+                    FreeRequestArgs(requestArgs);
                     return 0;
                 }
             }
@@ -428,4 +395,44 @@ int ReadRequest(LPREQUEST_DATA requestArgs) {
             }
         }
     }
+}
+
+
+int WriteRequest(LPREQUEST_DATA requestArgs) {
+    requestArgs->SocketInfo = GetSocketInformation(requestArgs->wParam);
+    if (requestArgs->SocketInfo->BytesRECV > requestArgs->SocketInfo->BytesSEND)
+    {
+        requestArgs->SocketInfo->DataBuf.buf = requestArgs->SocketInfo->Buffer + requestArgs->SocketInfo->BytesSEND;
+        requestArgs->SocketInfo->DataBuf.len = requestArgs->SocketInfo->BytesRECV - requestArgs->SocketInfo->BytesSEND;
+        if (WSASend(requestArgs->SocketInfo->Socket, &(requestArgs->SocketInfo->DataBuf), 1, &(requestArgs->SendBytes), 0,
+            NULL, NULL) == SOCKET_ERROR)
+        {
+            if (WSAGetLastError() != WSAEWOULDBLOCK)
+            {
+                printf("WSASend() failed with error %d\n", WSAGetLastError());
+                FreeSocketInformation(requestArgs->wParam);
+                return 0;
+            }
+        }
+        else // No error so update the byte count
+        {
+            printf("WSASend() is OK!\n");
+            requestArgs->SocketInfo->BytesSEND += requestArgs->SendBytes;
+        }
+    }
+    if (requestArgs->SocketInfo->BytesSEND == requestArgs->SocketInfo->BytesRECV)
+    {
+        requestArgs->SocketInfo->BytesSEND = 0;
+        requestArgs->SocketInfo->BytesRECV = 0;
+        // If a RECV occurred during our SENDs then we need to post an FD_READ notification on the socket
+        if (requestArgs->SocketInfo->RecvPosted == TRUE)
+        {
+            requestArgs->SocketInfo->RecvPosted = FALSE;
+
+            //PostMessage(hwnd, WM_SOCKET, wParam, FD_READ);
+        }
+    }
+    //PostMessage(hwnd, WM_SOCKET, wParam, FD_WRITE);
+    std::cout << "hey there" << std::endl;
+    return -1;
 }

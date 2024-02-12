@@ -58,3 +58,4 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsadata);
 LPREQUEST_DATA CreateNewRequestArgs(WPARAM wParam);
 int ReadRequest(LPREQUEST_DATA requestArgs);
+int WriteRequest(LPREQUEST_DATA requestArgs);
