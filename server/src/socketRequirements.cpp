@@ -7,6 +7,7 @@
 #include <iostream>
 #include <json/json.h>
 
+#include "Thread.hpp"
 #include "socketRequirements.hpp"
 
 

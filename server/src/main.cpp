@@ -7,21 +7,26 @@
 #include <utility>
 
 #include "socketRequirements.hpp"
+#include "Thread.hpp"
 
 
 
 //int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 int main(int argc, char** argv)
 {
+
+    Thread test;
     WSADATA wsaData;
 
-    std::pair<SOCKET, HWND> sockWinPair = WindowSocketInitialize(&wsaData);
+    test.launchSocketThread(&wsaData);
+
+    /*std::pair<SOCKET, HWND> sockWinPair = WindowSocketInitialize(&wsaData);
 
     if(sockWinPair == std::pair<SOCKET, HWND>(INVALID_SOCKET, NULL)) {
         return 1;
     };
 
     SOCKET Listen = sockWinPair.first;
-    HWND Window = sockWinPair.second;
+    HWND Window = sockWinPair.second;*/
 
 }

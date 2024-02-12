@@ -1,8 +1,17 @@
-// forward declaration
+#pragma once
+
+#include "json/json.h"
+
+//#include <winsock2.h>
+//#include <Windows.h>
+
+// forward declarations
 namespace std {
     template<typename T, typename U>
     class pair;
 }
+
+//class WSABUF;
 
 
 // gloabal macro
@@ -18,8 +27,6 @@ enum RequestType
     setName = 0,
     makePlay
 };
-
-
 
 // typedef definition
 typedef struct _SOCKET_INFORMATION {
@@ -41,5 +48,3 @@ LPSOCKET_INFORMATION GetSocketInformation(SOCKET s);
 void FreeSocketInformation(SOCKET s);
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsadata);
-
-//try
