@@ -1,8 +1,12 @@
 // forward declaration
-namespace std {
+/*namespace std {
     template<typename T, typename U>
     class pair;
-}
+}*/
+
+#include <winsock2.h>
+#include <windows.h>
+#include <utility>
 
 
 // gloabal macro
@@ -42,4 +46,4 @@ void CreateSocketInformation(SOCKET s);
 LPSOCKET_INFORMATION GetSocketInformation(SOCKET s);
 void FreeSocketInformation(SOCKET s);
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsadata);
+std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsadata);       // <-- As is, causes 13 LINK2019 errors

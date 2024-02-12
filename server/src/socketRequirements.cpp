@@ -1,9 +1,9 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-#include <winsock2.h>
-#include <Windows.h>
+/*#include <winsock2.h>
+#include <windows.h>*/
 #include <stdio.h>
-#include <utility>
+/*#include <utility>*/
 #include <iostream>
 #include <json/json.h>
 
