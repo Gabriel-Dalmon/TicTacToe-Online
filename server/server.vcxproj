@@ -136,8 +136,8 @@
     <ClCompile Include="src\Thread.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="headers\socketRequirements.hpp" />
-    <ClInclude Include="headers\Thread.hpp" />
+    <ClInclude Include="headers\socketRequirements.h" />
+    <ClInclude Include="headers\Thread.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

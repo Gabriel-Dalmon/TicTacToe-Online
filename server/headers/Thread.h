@@ -1,5 +1,8 @@
 #pragma once
 
+#include <winsock2.h>
+#include <Windows.h>
+
 class Thread 
 {
 public:
@@ -7,7 +10,7 @@ public:
 	~Thread();
 
 
-	static HANDLE SummonThread(void* functionAdress);
+	static void SummonThread(void* functionAdress);
 
 	void launchSocketThread(LPWSADATA wsaData);
 

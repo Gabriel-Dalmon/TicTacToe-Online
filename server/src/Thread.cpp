@@ -1,9 +1,9 @@
-#include <Windows.h>
+
 #include <utility>
 #include <iostream>
 
-#include "Thread.hpp"
-#include "socketRequirements.hpp"
+#include "Thread.h"
+#include "socketRequirements.h"
 
 int Thread::threadNumber = 0;
 HANDLE Thread::threadList[8] = {NULL};
@@ -16,7 +16,7 @@ Thread::~Thread() {
     //threadList[m_ID].remove();
 }
 
-HANDLE Thread::SummonThread(void* Instance) {
+void Thread::SummonThread(void* Instance) {
     /*HANDLE threadAddr = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)(Thread::SocketThread), NULL, 0, NULL);
 	 threadNumber++;
 	 threadList[threadNumber] = threadAddr;*/
@@ -33,6 +33,7 @@ void Thread::launchSocketThread(LPWSADATA wsaDataAddr) {
 }
 
 void Thread::SocketThread() {
+    std::cout << "esogijn";
     bool threadAlive = TRUE;
 
     std::pair<SOCKET, HWND> sockWinPair = WindowSocketInitialize(m_wsaDataAddr);

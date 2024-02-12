@@ -1,13 +1,11 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-#include <winsock2.h>
-#include <windows.h>
 #include <stdio.h>
 #include <conio.h>
 #include <utility>
 
-#include "socketRequirements.hpp"
-#include "Thread.hpp"
+#include "socketRequirements.h"
+#include "Thread.h"
 
 
 
@@ -28,5 +26,8 @@ int main(int argc, char** argv)
 
     SOCKET Listen = sockWinPair.first;
     HWND Window = sockWinPair.second;*/
+    while (true) {
+        //
+    }
 
 }

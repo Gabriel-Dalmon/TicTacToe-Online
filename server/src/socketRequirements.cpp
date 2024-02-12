@@ -1,14 +1,17 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-#include <winsock2.h>
-#include <Windows.h>
 #include <stdio.h>
 #include <utility>
 #include <iostream>
 #include <json/json.h>
 
-#include "Thread.hpp"
-#include "socketRequirements.hpp"
+#pragma comment (lib, "Ws2_32.lib")
+#pragma comment (lib, "Mswsock.lib")
+#pragma comment (lib, "AdvApi32.lib")
+
+#include "Thread.h"
+#include "socketRequirements.h"
+
 
 
 
