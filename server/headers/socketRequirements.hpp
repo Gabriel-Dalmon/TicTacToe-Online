@@ -11,12 +11,14 @@ namespace std {
 #define WM_SOCKET                               (WM_USER + 1)
 #define PORT                                    5150
 #define DATA_BUFSIZE                            8192
-#define DEFAULT_HEADERSIZE                        4
+#define DEFAULT_HEADERSIZE                         4
+#define DEFAULT_BUFLEN                           512
 
 enum RequestType
 {
     setName = 0,
-    makePlay
+    makePlay,
+    updateGrid
 };
 
 
@@ -30,7 +32,7 @@ typedef struct _SOCKET_INFORMATION {
     DWORD BytesSEND;
     DWORD BytesRECV;
     struct _SOCKET_INFORMATION* Next;
-    Json::Value lastJsonValue;
+    //Json::Value lastJsonValue;
 } SOCKET_INFORMATION, * LPSOCKET_INFORMATION;
 
 

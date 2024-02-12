@@ -49,6 +49,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
 
             case FD_READ:
+                printf("FD_READ is OK!\n");
                 SocketInfo = GetSocketInformation(wParam);
                 // Read data only if the receive buffer is empty
                 if (SocketInfo == NULL) {
@@ -61,7 +62,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                 {
-                    SocketInfo->DataBuf.buf = SocketInfo->Buffer;
+                    SocketInfo->DataBuf.buf = (CHAR*)"1234";
                     SocketInfo->DataBuf.len = DEFAULT_HEADERSIZE;
                     Flags = 0;
                     if (WSARecv(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes,
@@ -76,65 +77,113 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
                     else // No error so update the byte count
                     {
-                        printf("WSARecv() is OK!\n");
-
-                        // Char* to int converter
-                        int dataBufferSize = 0;
+                        WSABUF SockInfo;
+                        int headerSize = 0;
                         for (int i = 0; i < DEFAULT_HEADERSIZE; i++)
                         {
-                            printf("   /!\\ Entering for() loop ! Iteration number %d", i + 1);
-                            dataBufferSize |= SocketInfo->DataBuf.buf[i] << i * 8;
-                            printf("      dataBufferSize is now %08X\n", dataBufferSize);
+                            printf("char header[%d] : %02X\n", i, SocketInfo->DataBuf.buf[i]);
+                            headerSize |= SocketInfo->DataBuf.buf[i] << (DEFAULT_HEADERSIZE - 1 - i) * 8;
+                            printf("int headerSize : %08X\n\n", headerSize);
                         }
-
-                        SocketInfo->DataBuf.buf = SocketInfo->Buffer;
-                        SocketInfo->DataBuf.len = dataBufferSize;
-                        Flags = 0;
-                        if (WSARecv(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &RecvBytes,
+                        char* recievedData = (char*)malloc(headerSize * sizeof(char));
+                        SockInfo.buf = recievedData;
+                        SockInfo.len = headerSize;
+                        if (WSARecv(SocketInfo->Socket, &(SockInfo), 1, &RecvBytes,
                             &Flags, NULL, NULL) == SOCKET_ERROR)
                         {
                             if (WSAGetLastError() != WSAEWOULDBLOCK)
                             {
+                                free(recievedData);
                                 printf("WSARecv() failed with error %d\n", WSAGetLastError());
                                 FreeSocketInformation(wParam);
                                 return 0;
                             }
                         }
-                        else // No error so update the byte count
+
+                        /*
+                          *  Convertion in the other direction because server is f* cked
+                          */
+
+                          // Convertion into std::string so that the Json library can use it
+                        std::string json_data(recievedData);
+
+                        // Parsing the Json data
+                        Json::Value recieveRoot;
+                        JSONCPP_STRING err;
+                        Json::CharReaderBuilder readBuilder;
+                        const std::unique_ptr<Json::CharReader> reader(readBuilder.newCharReader());
+                        if (!reader->parse(json_data.c_str(), json_data.c_str() + json_data.length(), &recieveRoot, &err))
                         {
-                                /*
-                                 *  Convertion in the other direction because server is f* cked
-                                 */
-
-                                 // Convertion into std::string so that the Json library can use it
-                            char* recievedData = SocketInfo->DataBuf.buf;
-                            std::string json_data(recievedData);
-
-                            // Parsing the Json data
-                            Json::Value recieveRoot;
-                            JSONCPP_STRING err;
-                            Json::CharReaderBuilder readBuilder;
-                            const std::unique_ptr<Json::CharReader> reader(readBuilder.newCharReader());
-
-                            if (!reader->parse(json_data.c_str(), json_data.c_str() + json_data.length(), &recieveRoot, &err))
-                            {
-                                std::cout << "error" << std::endl;
-                                return 0;
-                            }
-
-                            SocketInfo->lastJsonValue = recieveRoot;
+                            std::cout << "error" << std::endl;
                         }
+
+                        // Extracting the data
+                        switch (recieveRoot["request"].asInt())
+                        {
+                        case setName:
+                            printf("\n\tWe should set the name with %s\n", recieveRoot["reqData"].asCString());
+                            break;
+                        case makePlay:
+                            printf("\n\tWe should set the name with %s\n", recieveRoot["reqData"].asInt());
+                            break;
+                        }
+
+
+                        std::cout << "WSARecv() is OK!\n" << recievedData << "\n";
+                        SocketInfo->BytesRECV = RecvBytes;
+                        free(recievedData);
                     }
                 }
                 // DO NOT BREAK HERE SINCE WE GOT A SUCCESSFUL RECV. Go ahead
                 // and begin writing data to the client
-
             case FD_WRITE:
+                printf("FD_WRITE is OK!\n");
                 SocketInfo = GetSocketInformation(wParam);
                 if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
                 {
-                    SocketInfo->DataBuf.buf = SocketInfo->Buffer + SocketInfo->BytesSEND;
-                    SocketInfo->DataBuf.len = SocketInfo->BytesRECV - SocketInfo->BytesSEND;
+
+                    Json::Value sendRoot;
+                    Json::Value request(setName);
+                    Json::Value reqData("Jose");
+
+                    // Fills up the Json
+                    sendRoot["request"] = request;
+                    sendRoot["reqData"] = reqData;
+
+                    // Converts the Json from std::string to const char*
+                    Json::StreamWriterBuilder writeBuilder;
+                    std::string tempStr = Json::writeString(writeBuilder, sendRoot);
+                    const char* jsonMsg = tempStr.c_str();
+                    printf("jsonMsg : %s\n", jsonMsg);
+
+                    /*
+                     *  This big block of code take a char* variable, and uses it's size as well as 2 constants to pack it into 1 char* usuable by msdn::send()
+                     *  The 2 constants used are to define the max size of the message that will be sent, as well as the fix size of the header to read the data
+                     *  At 4, the header is the size of one(1) int. The size of the message is expressed in Bytes.
+                     *
+                     *  Once the Json format will be in place, this block will work assuming we're dealing with the constant amount of Byte defined above on both client and server side
+                     */
+                    char sendbuf[DEFAULT_BUFLEN] = "";
+                    // Fills sendbuf with the size of the message to send as an int, into the char* so that send() can work with it.
+                    printf("sendbuf : \n");
+                    for (int i = 0; i < DEFAULT_HEADERSIZE; i++)
+                    {
+                        sendbuf[i] = strlen(jsonMsg) >> (DEFAULT_HEADERSIZE - 1 - i) * 8;
+                        printf("%02X", sendbuf[i]);
+                    }
+                    // Fills manually sendbuf with the rest of the message
+                    // C/C++ default concatenators fail here because we are often dealing with '\0', hence the manual option
+                    for (int i = DEFAULT_HEADERSIZE; i < strlen(jsonMsg) + DEFAULT_HEADERSIZE; i++)
+                    {
+                        sendbuf[i] = jsonMsg[i - DEFAULT_HEADERSIZE];
+                        printf("%c", sendbuf[i]);
+                    }
+
+                    SocketInfo->DataBuf.buf = sendbuf;
+                    SocketInfo->DataBuf.len = strlen(sendbuf);
+
+                    //strncpy_s(SI->Buffer, "Hello", strlen("Hello"));
+
                     if (WSASend(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &SendBytes, 0,
                         NULL, NULL) == SOCKET_ERROR)
                     {
@@ -160,12 +209,13 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     {
                         SocketInfo->RecvPosted = FALSE;
 
-                        //PostMessage(hwnd, WM_SOCKET, wParam, FD_READ);
+                        PostMessage(hwnd, WM_SOCKET, wParam, FD_READ);
                     }
                 }
                 //PostMessage(hwnd, WM_SOCKET, wParam, FD_WRITE);
-                std::cout << "hey there" << std::endl;
                 break;
+
+
 
             case FD_CLOSE:
 
