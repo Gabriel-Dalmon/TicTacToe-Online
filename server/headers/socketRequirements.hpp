@@ -41,3 +41,5 @@ LPSOCKET_INFORMATION GetSocketInformation(SOCKET s);
 void FreeSocketInformation(SOCKET s);
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsadata);
+
+//try
