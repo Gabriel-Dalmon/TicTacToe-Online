@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include <utility>
+#include <iostream>
 
 #include "socketRequirements.h"
 #include "Thread.h"
@@ -13,21 +14,12 @@
 int main(int argc, char** argv)
 {
 
-    Thread test;
+    
     WSADATA wsaData;
+    Thread test(&wsaData);
 
-    test.launchSocketThread(&wsaData);
-
-    /*std::pair<SOCKET, HWND> sockWinPair = WindowSocketInitialize(&wsaData);
-
-    if(sockWinPair == std::pair<SOCKET, HWND>(INVALID_SOCKET, NULL)) {
-        return 1;
-    };
-
-    SOCKET Listen = sockWinPair.first;
-    HWND Window = sockWinPair.second;*/
     while (true) {
-        //
+        //std::cout << Thread::threadList.size() << std::endl;
     }
 
 }

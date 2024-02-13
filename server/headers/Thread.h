@@ -6,19 +6,18 @@
 class Thread 
 {
 public:
-	Thread();
+	Thread(LPWSADATA wsaDataAddr);
 	~Thread();
 
 
 	static void SummonThread(void* functionAdress);
+	static std::vector<HANDLE> threadList;
 
-	void launchSocketThread(LPWSADATA wsaData);
 
-	void SocketThread();
+	void RunSocketThread();
+	void CloseSocket();
 	
-	static HANDLE threadList[8];
-	static int threadNumber;
 
 	LPWSADATA m_wsaDataAddr;
-	int m_ID;
+	HANDLE m_This;
 };
