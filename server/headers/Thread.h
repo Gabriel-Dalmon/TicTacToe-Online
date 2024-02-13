@@ -6,7 +6,7 @@
 class Thread 
 {
 public:
-	Thread(LPWSADATA wsaDataAddr);
+	Thread();
 	~Thread();
 
 
@@ -15,9 +15,8 @@ public:
 
 
 	void RunSocketThread();
-	void CloseSocket();
 	
 
-	LPWSADATA m_wsaDataAddr;
+	WSADATA m_wsaData;
 	HANDLE m_This;
 };

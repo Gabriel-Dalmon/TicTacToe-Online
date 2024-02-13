@@ -352,7 +352,7 @@ std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsaData) {
 
     if (WSAAsyncSelect(Listen, Window, WM_SOCKET, FD_ACCEPT | FD_CLOSE) == 0)
 
-        printf("WSAAsyncSelect() is OK lol!\n");
+        printf("WSAAsyncSelect() is OK!\n");
 
     else
 
