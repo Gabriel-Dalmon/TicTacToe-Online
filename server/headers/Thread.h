@@ -6,15 +6,12 @@
 class Thread 
 {
 public:
-	Thread();
-	~Thread();
-
 
 	static void SummonThread(void* functionAdress);
 	static std::vector<HANDLE> threadList;
 
 
-	void RunSocketThread();
+	virtual void RunThread() {};
 	
 
 	WSADATA m_wsaData;

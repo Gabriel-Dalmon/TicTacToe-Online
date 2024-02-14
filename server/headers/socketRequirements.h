@@ -4,12 +4,6 @@
 #include <winsock2.h>
 #include <Windows.h>
 
-// forward declarations
-//namespace std {
-//    template<typename T, typename U>
-//    class pair;
-//}
-
 
 
 // gloabal macro
@@ -26,7 +20,7 @@ enum RequestType
     makePlay
 };
 
-// typedef definition
+// struct definition
 typedef struct _SOCKET_INFORMATION {
     BOOL RecvPosted;
     CHAR Buffer[DATA_BUFSIZE];

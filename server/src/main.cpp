@@ -15,8 +15,7 @@ int main(int argc, char** argv)
 {
 
     
-    WSADATA wsaData;
-    Thread test(&wsaData);
+    Thread test();
 
     while (true) {
         //std::cout << Thread::threadList.size() << std::endl;

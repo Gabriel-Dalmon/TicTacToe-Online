@@ -132,12 +132,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\ReadingThread.cpp" />
     <ClCompile Include="src\socketRequirements.cpp" />
     <ClCompile Include="src\Thread.cpp" />
+    <ClCompile Include="src\WritingThread.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="headers\ReadingThread.h" />
     <ClInclude Include="headers\socketRequirements.h" />
     <ClInclude Include="headers\Thread.h" />
+    <ClInclude Include="headers\WritingThread.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
