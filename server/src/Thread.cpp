@@ -1,55 +1,55 @@
 #include <utility>
 #include <iostream>
+#include <algorithm>
 
-#include "Thread.h"
+
 #include "socketRequirements.h"
+#include "Thread.h"
 
-int Thread::threadNumber = 0;
-HANDLE Thread::threadList[8] = {NULL};
+
+std::vector<HANDLE> Thread::threadList = {};
 
 Thread::Thread() {
-    
-}
-
-Thread::~Thread() {
-    //threadList[m_ID].remove();
-}
-
-void Thread::SummonThread(void* Instance) {
-    /*HANDLE threadAddr = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)(Thread::SocketThread), NULL, 0, NULL);
-	 threadNumber++;
-	 threadList[threadNumber] = threadAddr;*/
-    Thread* This = (Thread*)Instance;
-    This->SocketThread();
-}
-
-void Thread::launchSocketThread(LPWSADATA wsaDataAddr) {
-    m_ID = threadNumber;
-    threadList[threadNumber] = this;
-    threadNumber++;
-    m_wsaDataAddr = wsaDataAddr;
     CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Thread::SummonThread, (void*)this, 0, NULL);
 }
 
-void Thread::SocketThread() {
-    std::cout << "esogijn";
-    bool threadAlive = TRUE;
+Thread::~Thread() {
+    
+}
 
-    std::pair<SOCKET, HWND> sockWinPair = WindowSocketInitialize(m_wsaDataAddr);
+void Thread::SummonThread(void* Instance) {
+    Thread* This = (Thread*)Instance;
+    This->m_This = (HANDLE)Instance;
+    threadList.push_back(This->m_This);
+    This->RunSocketThread();
+}
+
+
+void Thread::RunSocketThread() {
+    MSG msg;
+    DWORD Ret;
+
+    // Initializing the window 
+    std::pair<SOCKET, HWND> sockWinPair = WindowSocketInitialize(&m_wsaData);
 
     if (sockWinPair == std::pair<SOCKET, HWND>(INVALID_SOCKET, NULL)) {
         // Setupe caught an error, we kill the thread
         std::cerr << "error in thread inialzation" << std::endl;
-        delete this;
+        threadList.erase(std::remove(threadList.begin(), threadList.end(), m_This), threadList.end());
         return;
     };
-
     SOCKET Listen = sockWinPair.first;
     HWND Window = sockWinPair.second;
 
-    while (threadList[m_ID] == this) {
-        // Thread is alive
+
+    while (Ret = GetMessage(&msg, Window, 0, 0)) {
+        if (Ret != -1) {
+            DispatchMessageW(&msg);
+            //PostMessage(Window, (UINT)&msg, 0, 0);
+        }
     }
 
-    delete this;
+
+    threadList.erase(std::remove(threadList.begin(), threadList.end(), m_This), threadList.end());
+    return;
 }

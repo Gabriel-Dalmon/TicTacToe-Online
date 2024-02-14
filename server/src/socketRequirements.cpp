@@ -20,6 +20,7 @@ LPSOCKET_INFORMATION SocketInfoList;
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 {
+    std::cout << "windProc" << std::endl;
     SOCKET Accept;
     LPSOCKET_INFORMATION SocketInfo;
     DWORD RecvBytes;
@@ -53,6 +54,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 break;
 
             case FD_READ:
+                std::cout << "fd read proc" << std::endl;
                 SocketInfo = GetSocketInformation(wParam);
                 // Read data only if the receive buffer is empty
                 if (SocketInfo == NULL) {
@@ -127,16 +129,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                             }
 
                             SocketInfo->lastJsonValue = recieveRoot;
+
                         }
                     }
                 }
-                // DO NOT BREAK HERE SINCE WE GOT A SUCCESSFUL RECV. Go ahead
-                // and begin writing data to the client
+                break;
 
             case FD_WRITE:
+                std::cout<< "fd write proc" <<std::endl;
                 SocketInfo = GetSocketInformation(wParam);
-                if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
-                {
+                /*if (SocketInfo->BytesRECV > SocketInfo->BytesSEND)
+                {*/
                     SocketInfo->DataBuf.buf = SocketInfo->Buffer + SocketInfo->BytesSEND;
                     SocketInfo->DataBuf.len = SocketInfo->BytesRECV - SocketInfo->BytesSEND;
                     if (WSASend(SocketInfo->Socket, &(SocketInfo->DataBuf), 1, &SendBytes, 0,
@@ -154,7 +157,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         printf("WSASend() is OK!\n");
                         SocketInfo->BytesSEND += SendBytes;
                     }
-                }
+                /*}
+                else
+                    std::cout << "sus error" << std::endl;*/
                 if (SocketInfo->BytesSEND == SocketInfo->BytesRECV)
                 {
                     SocketInfo->BytesSEND = 0;
@@ -168,7 +173,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
                 }
                 //PostMessage(hwnd, WM_SOCKET, wParam, FD_WRITE);
-                std::cout << "hey there" << std::endl;
+                std::cout << "fd write end" << std::endl;
                 break;
 
             case FD_CLOSE:
@@ -347,7 +352,7 @@ std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsaData) {
 
     if (WSAAsyncSelect(Listen, Window, WM_SOCKET, FD_ACCEPT | FD_CLOSE) == 0)
 
-        printf("WSAAsyncSelect() is OK lol!\n");
+        printf("WSAAsyncSelect() is OK!\n");
 
     else
 
@@ -383,21 +388,22 @@ std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsaData) {
         printf("listen() is also OK! I am listening now...\n");
     // Translate and dispatch window messages for the application thread
 
-    while (Ret = GetMessage(&msg, NULL, 0, 0))
+    //while (Ret = GetMessage(&msg, NULL, 0, 0))
 
-    {
-        if (Ret == -1)
-        {
-            printf("\nGetMessage() failed with error %d\n", GetLastError());
-            //return 1;
-        }
-        else printf("\nGetMessage() is pretty fine!\n");
+    //{
+    //    
+    //    //if (Ret == -1)
+    //    //{
+    //    //    printf("\nGetMessage() failed with error %d\n", GetLastError());
+    //    //    //return 1;
+    //    //}
+    //    //else printf("\nGetMessage() is pretty fine!\n");
 
-        printf("Translating a message...\n");
-        TranslateMessage(&msg);
-        printf("Dispatching a message...\n");
-        DispatchMessage(&msg);
-    }
+    //    //printf("Translating a message...\n");
+    //    TranslateMessage(&msg);
+    //    //printf("Dispatching a message...\n");
+    //    DispatchMessage(&msg);
+    //}
 
     return std::pair<SOCKET, HWND>(Listen, Window);
 }

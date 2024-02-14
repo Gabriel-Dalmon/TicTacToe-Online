@@ -5,10 +5,10 @@
 #include <Windows.h>
 
 // forward declarations
-namespace std {
-    template<typename T, typename U>
-    class pair;
-}
+//namespace std {
+//    template<typename T, typename U>
+//    class pair;
+//}
 
 
 

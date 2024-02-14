@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <conio.h>
 #include <utility>
+#include <iostream>
 
 #include "socketRequirements.h"
 #include "Thread.h"
@@ -16,39 +17,60 @@ enum matchStates
     tie
 };
 
+enum RequestType
+{
+    IGNORE_REQ = 0, // Avoid sending request at all
+    setName,
+    makePlay
+};
+
+
+// Decoy function to avoid reading the Json::Value bridges so much that the WebThread have to wait to write in it
+int decoyReqType()
+{
+    return -1;
+}
+// Reading function that gets data from the Json::Value bridges to process them
+int readReqType(Json::Value* request)
+{
+    return (*request)["reqType"].asInt();
+}
+// Packing function that creates and stores a Json::Value in the send-bridge for webThreads to send out
+Json::Value packRequest(int reqType, void* reqData)
+{
+    Json::Value request;
+    request["reqType"] = reqType;
+    request["reqData"] = reqData;
+
+    return request;
+}
+// Blocking a request for it not to be sent
+void deactivateRequest(Json::Value* request)
+{
+    (*request)["reqType"] = IGNORE_REQ;
+}
 
 //int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 int main(int argc, char** argv)
 {
+    // Creation of threads for communication
+    Json::Value lastRecvReq[2];
+    Json::Value lastSendReq[2];
+    Thread webReceiver();
+    Thread webSender();
 
-    Thread test;
-    WSADATA wsaData;
+    // Intialize everything the server locally needs to keep track of players and the match
+    int grid[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+    char* playersName[2];
+    SOCKET* turnOf;
+    int matchState = waiting_players;
+    bool noClients = false;
 
-    test.launchSocketThread(&wsaData);
-
-    /*std::pair<SOCKET, HWND> sockWinPair = WindowSocketInitialize(&wsaData);
-
-    if(sockWinPair == std::pair<SOCKET, HWND>(INVALID_SOCKET, NULL)) {
-        return 1;
-    };
-
-    SOCKET Listen = sockWinPair.first;
-    HWND Window = sockWinPair.second;*/
-    while (true)
+    // Enter main server loop. If no clients are connected, a timer starts, and upon reaching XX, the server closes.
+    while (!noClients /*&& timer is below threashold*/)
     {
-        // Intialize everything the server locally needs to keep track of players and the match
-        int grid[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        char* playersName[2];
-        SOCKET* turnOf;
-        int matchState = waiting_players;
-        bool noClients = false;
-
-        // Enter main server loop. If no clients are connected, a timer starts, and upon reaching XX, the server closes.
-        while (!noClients /*&& timer is below threashold*/)
-        {   
-            // By default, it will do nothing until it receives an event
-        }
-            
+        switch ()
     }
+
 
 }

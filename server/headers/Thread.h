@@ -11,14 +11,13 @@ public:
 
 
 	static void SummonThread(void* functionAdress);
+	static std::vector<HANDLE> threadList;
 
-	void launchSocketThread(LPWSADATA wsaData);
 
-	void SocketThread();
+
+	void RunSocketThread();
 	
-	static HANDLE threadList[8];
-	static int threadNumber;
 
-	LPWSADATA m_wsaDataAddr;
-	int m_ID;
+	WSADATA m_wsaData;
+	HANDLE m_This;
 };
