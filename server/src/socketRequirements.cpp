@@ -273,21 +273,13 @@ HWND MakeWorkerWindow(void)
         L"TestWindow",
 
         WS_OVERLAPPEDWINDOW,
-
         CW_USEDEFAULT,
-
         CW_USEDEFAULT,
-
         CW_USEDEFAULT,
-
         CW_USEDEFAULT,
-
         NULL,
-
         NULL,
-
         NULL,
-
         NULL)) == NULL)
     {
         printf("CreateWindow() failed with error %d\n", GetLastError());

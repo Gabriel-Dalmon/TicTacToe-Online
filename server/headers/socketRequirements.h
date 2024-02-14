@@ -3,6 +3,7 @@
 #include <json/json.h>
 #include <winsock2.h>
 #include <Windows.h>
+#include "enum.h"
 
 
 
@@ -13,12 +14,6 @@
 #define PORT                                    5150
 #define DATA_BUFSIZE                            8192
 #define DEFAULT_HEADERSIZE                        4
-
-enum RequestType
-{
-    setName = 0,
-    makePlay
-};
 
 // struct definition
 typedef struct _SOCKET_INFORMATION {
