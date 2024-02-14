@@ -25,16 +25,20 @@ enum RequestType
 };
 
 
-// Decoy function to avoid reading the Json::Value bridges so much that the WebThread have to wait to write in it
-int decoyReqType()
+// Empty function to avoid reading the Json::Value bridges so much that the WebThread have to wait to write in it
+// This way to handle chnages in the bridge variables is too specific and kinda trash, it aspires to change for REAL alpha mal- uhh events
+void doNothing()
 {
-    return -1;
 }
-// Reading function that gets data from the Json::Value bridges to process them
-int readReqType(Json::Value* request)
+// Swap the taskController function adress
+void swapFunctionAddress(void (*taskController)())
 {
-    return (*request)["reqType"].asInt();
+    if (taskController == doNothing)
+        { taskController = treatData; }
+    else
+        { taskController = doNothing; }
 }
+
 // Packing function that creates and stores a Json::Value in the send-bridge for webThreads to send out
 Json::Value packRequest(int reqType, void* reqData)
 {
@@ -50,6 +54,13 @@ void deactivateRequest(Json::Value* request)
     (*request)["reqType"] = IGNORE_REQ;
 }
 
+// Read, treats, send back to the clients the new game or players state given a received request
+// Switch case time. ¬ w ¬
+void treatData()
+{
+    // sw<itch case
+}
+
 //int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 int main(int argc, char** argv)
 {
@@ -58,6 +69,9 @@ int main(int argc, char** argv)
     Json::Value lastSendReq[2];
     Thread webReceiver();
     Thread webSender();
+
+    // Pointer to function (to avoid spam-reading lastRecvReq)
+    void (*taskController)() = doNothing;
 
     // Intialize everything the server locally needs to keep track of players and the match
     int grid[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -69,8 +83,6 @@ int main(int argc, char** argv)
     // Enter main server loop. If no clients are connected, a timer starts, and upon reaching XX, the server closes.
     while (!noClients /*&& timer is below threashold*/)
     {
-        switch ()
+        taskController();
     }
-
-
 }
