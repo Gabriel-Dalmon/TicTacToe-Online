@@ -135,12 +135,15 @@
     <ClCompile Include="src\ReadingThread.cpp" />
     <ClCompile Include="src\socketRequirements.cpp" />
     <ClCompile Include="src\Thread.cpp" />
+    <ClCompile Include="src\threadInteractions.cpp" />
     <ClCompile Include="src\WritingThread.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="headers\enum.h" />
     <ClInclude Include="headers\ReadingThread.h" />
     <ClInclude Include="headers\socketRequirements.h" />
     <ClInclude Include="headers\Thread.h" />
+    <ClInclude Include="headers\threadInteractions.h" />
     <ClInclude Include="headers\WritingThread.h" />
   </ItemGroup>
   <ItemGroup>
