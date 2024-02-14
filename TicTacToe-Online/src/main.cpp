@@ -19,7 +19,7 @@ int main(int argc, char** argv)
         GameManager::instance().update();
 
         //renvoie
-        //GameManager::instance().render();
+        GameManager::instance().render();
 
     }
 

@@ -4,6 +4,8 @@
 #include <SFML/System/Time.hpp>
 #include <vector>
 #include "../events/EventsManager.h"
+#include "../../server/headers/socketRequirements.h"
+
 //class EventsManager;
 class Window;
 class GameState;
@@ -29,6 +31,9 @@ public:
 	EventsManager* getEventsManager();
 	Window* getWindow();
 	sf::Vector2i getMousePosition();
+
+	int RequestValue;
+
 
 private:
 	GameManager() {};

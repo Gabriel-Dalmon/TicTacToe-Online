@@ -23,7 +23,7 @@ namespace std {
 enum RequestType
 {
     setName = 0,
-    makePlay
+    MakePlay,
 };
 
 // typedef definition
@@ -46,3 +46,4 @@ LPSOCKET_INFORMATION GetSocketInformation(SOCKET s);
 void FreeSocketInformation(SOCKET s);
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsadata);
+int ValueSend;

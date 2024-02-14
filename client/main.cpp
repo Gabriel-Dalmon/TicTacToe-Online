@@ -12,7 +12,8 @@
 #include <iostream>
 
 // JSON managing librairy bcuz lazy
-//#include <json/json.h>
+#include <json/json.h>
+#include "../server/headers/socketRequirements.h"
 
 
 // Need to link with Ws2_32.lib, Mswsock.lib, and Advapi32.lib
@@ -23,13 +24,13 @@
 
 #define DEFAULT_BUFLEN 132
 #define DEFAULT_PORT "5150"
-#define SERVER_IP "192.168.1.152"//"10.1.144.23" // 192.168.56.1 // 
+#define SERVER_IP "10.1.144.24"//"10.1.144.23" // 192.168.56.1 // 
+#define DEFAULT_HEADSIZE    4
+
+LPSOCKET_INFORMATION SocketInfo;
 
 int __cdecl main(int argc, char** argv)
 {
-
-
-    
 
     WSADATA wsaData;
     SOCKET ConnectSocket = INVALID_SOCKET;
@@ -42,7 +43,8 @@ int __cdecl main(int argc, char** argv)
     //Json::Value root;
     std::ifstream grid_snipet("game_snipet.json", std::ifstream::binary);
 
-    const char* sendbuf = "this is NOT a test";
+    //char sendbuf[DEFAULT_BUFLEN] = "";
+    char sendbuf[DEFAULT_BUFLEN] = "Alpha, Beta, Charlie, Delta, Echo";
     char recvbuf[DEFAULT_BUFLEN];
     int iResult;
     int recvbuflen = DEFAULT_BUFLEN;
@@ -109,7 +111,32 @@ int __cdecl main(int argc, char** argv)
     }
 
     // Send an initial buffer
-    iResult = send(ConnectSocket, sendbuf, (int)strlen(sendbuf), 0);
+
+    printf("Bytes Sent: %ld\n", iResult);
+
+
+    Json::Value sendRoot;
+    Json::Value request(setName);
+    Json::Value reqData("HELLO, my ladies");
+
+    sendRoot["request"] = request;
+    sendRoot["reqData"] = reqData;
+
+    Json::StreamWriterBuilder writeBuilder;
+    std::string tempStr = Json::writeString(writeBuilder, sendRoot);
+    const char* jsonMsg = tempStr.c_str();
+
+    for (int i = 0; i < DEFAULT_HEADSIZE; i++)
+    {
+        sendbuf[i] = strlen(jsonMsg) >> (DEFAULT_HEADSIZE - 1 - i) * 8;
+    }
+
+    for (int i = DEFAULT_HEADSIZE; i < strlen(jsonMsg) + DEFAULT_HEADSIZE; i++)
+    {
+        sendbuf[i] = jsonMsg[i - DEFAULT_HEADSIZE];
+    }
+
+    iResult = send(ConnectSocket, sendbuf, (int)strlen(jsonMsg) + DEFAULT_HEADSIZE, 0);
     if (iResult == SOCKET_ERROR) {
         printf("send failed with error: %d\n", WSAGetLastError());
         closesocket(ConnectSocket);

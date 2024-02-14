@@ -114,6 +114,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                             char* recievedData = SocketInfo->DataBuf.buf;
                             std::string json_data(recievedData);
 
+                            std::cout << "Recieved Data = " << recievedData << "\n";
+
                             // Parsing the Json data
                             Json::Value recieveRoot;
                             JSONCPP_STRING err;
@@ -127,6 +129,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                             }
 
                             SocketInfo->lastJsonValue = recieveRoot;
+                            
+                            if (recieveRoot.isMember("request"))
+                            {
+                                Json::Value RequestValue = recieveRoot["request"];
+
+                                if (RequestValue.isInt())
+                                {
+                                    std::cout << "Request Value = " << RequestValue << "\n";
+                                    ValueSend = RequestValue.isInt();
+                                }
+                            }
+
                         }
                     }
                 }
