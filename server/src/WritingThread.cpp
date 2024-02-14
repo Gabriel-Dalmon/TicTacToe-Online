@@ -5,18 +5,28 @@
 
 
 #include "socketRequirements.h"
-#include "ReadingThread.h"
+#include "WritingThread.h"
 
-
+// Empty Interface constru/destru
 Thread::Thread() {
 }
+Thread::~Thread() { 
+}
 
-Thread::~Thread() {
-    
+// WritingThread constru/destru (for WSA)
+WritingThread::WritingThread()
+{
+    std::lock_guard<std::mutex> lock(initMutex);
+    WSAStartup(MAKEWORD(2, 2), &m_wsaData);
+}
+WritingThread::~WritingThread()
+{
+    std::lock_guard<std::mutex> lock(initMutex);
+    WSACleanup();
 }
 
 
-void Thread::RunThread() {
+void WritingThread::RunThread() {
     MSG msg;
     DWORD Ret;
 
@@ -24,7 +34,7 @@ void Thread::RunThread() {
     std::pair<SOCKET, HWND> sockWinPair = WindowSocketInitialize(&m_wsaData);
 
     if (sockWinPair == std::pair<SOCKET, HWND>(INVALID_SOCKET, NULL)) {
-        // Setupe caught an error, we kill the thread
+        // Setup caught an error, we kill the thread
         std::cerr << "error in thread inialzation" << std::endl;
         threadList.erase(std::remove(threadList.begin(), threadList.end(), m_This), threadList.end());
         return;
