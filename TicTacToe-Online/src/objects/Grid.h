@@ -25,6 +25,7 @@ public:
 	Grid(float x, float y, float width, float height);
 	~Grid() {};
 	void onMouseClick();
+	void playMove(int index);
 	WinDirection isMoveWinning();
 
 
@@ -33,5 +34,9 @@ private:
 	int m_GridSize = 3;
 	int m_CurrentPlayer = 1;
 	sf::Sprite* m_Sprite;
+
+	int index = 0;
+	int column;
+	int row;
 };
 

@@ -11,6 +11,7 @@
 
 #include "Thread.h"
 #include "socketRequirements.h"
+#include "../../TicTacToe-Online/src/objects/Grid.h"
 
 
 
@@ -137,10 +138,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 if (RequestValue.isInt())
                                 {
                                     std::cout << "Request Value = " << RequestValue << "\n";
-                                    ValueSend = RequestValue.isInt();
+
+                                    ²playMove(RequestValue);
                                 }
                             }
-
                         }
                     }
                 }

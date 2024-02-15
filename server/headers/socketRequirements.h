@@ -20,10 +20,22 @@ namespace std {
 #define DATA_BUFSIZE                            8192
 #define DEFAULT_HEADERSIZE                        4
 
-enum RequestType
+enum matchStates
 {
-    setName = 0,
-    MakePlay,
+    waiting_players = 0,
+    running,
+    player1Win,
+    player2Win,
+    tie
+};
+
+enum requestType
+{
+    IGNORE_REQ = 0,     // Ignore and never send the request
+    setName,            // Contains the new name for a player
+    updateOpponentName, // Contains the new name of the opponent (to update on the client's screen)
+    makePlay,           // Contains a player's index where they want to play
+    updateMatchState    // Contains all the info about the match. Sent after a legal move is played
 };
 
 // typedef definition
@@ -46,4 +58,3 @@ LPSOCKET_INFORMATION GetSocketInformation(SOCKET s);
 void FreeSocketInformation(SOCKET s);
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 std::pair<SOCKET, HWND> WindowSocketInitialize(WSADATA* wsadata);
-int ValueSend;

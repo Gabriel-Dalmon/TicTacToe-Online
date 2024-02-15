@@ -24,39 +24,34 @@ Grid::Grid(float x, float y, float width, float height) : GameObject(width, heig
 
 void Grid::onMouseClick()
 {
-	int index = ValueSend;
-
 	sf::Vector2i mousePosition = GameManager::instance().getMousePosition();
 	if (!this->isPointInAABB((sf::Vector2f)mousePosition)) {
 		return;
 	}
+		// can be replaced with euclydian division (mousePos - gridPos / gridSize), which probably computes faster
+	int column = (mousePosition.x - this->getPosition().x) / (this->getWidth() / 3);
+	int row = (mousePosition.y - this->getPosition().y) / (this->getHeight() / 3);
+
+		//Can pick the index of array 
+	if (row >= 0 && row < 3 && column >= 0 && column < 3) {
+		index = row * 3 + column;
+		std::cout << "L'index : " << index << std::endl;
+		
+		//Converse Index to row/colum
+		row = index / 3;
+		column = index % 3;
+		std::cout << "row: " << row << ", column: " << column << std::endl;
+	}
+}
+
+void Grid::playMove(int index)
+{
+
+	row = index / 3;
+	column = index % 3;
 
 	sf::Vector2f gridPosition = this->getPosition();
 	float cellSize = this->getWidth() / 3;
-
-	//// can be replaced with euclydian division (mousePos - gridPos / gridSize), which probably computes faster
-	//int column = (mousePosition.x - gridPosition.x) / (this->getWidth() / 3);
-	//int row = (mousePosition.y - gridPosition.y) / (this->getHeight() / 3);
-
-	int row = index / 3;
-	int column = index % 3;
-
-	//if (m_GridState[column * m_GridSize + row] != 0) {
-	//	GameManager::instance().getEventsManager()->trigger(EventName::CELL_ALREADY_TAKEN);
-	//	return;
-	//}
-	//m_GridState[column * m_GridSize + row] = m_CurrentPlayer;
-
-	//	//Can pick the index of array 
-	//if (row >= 0 && row < 3 && column >= 0 && column < 3) {
-	//	int index = row * 3 + column;
-	//	std::cout << "L'index : " << index << std::endl;
-
-	//	//Converse Index to row/colum
-
-	//	std::cout << "row: " << row << ", column: " << column << std::endl;
-
-	//}
 
 	Symbol* symbol = new Symbol(m_CurrentPlayer == 1 ? AssetSymbol::CROSS : AssetSymbol::CIRCLE, gridPosition.x + column * cellSize, gridPosition.y + row * cellSize, cellSize, cellSize);
 	GameManager::instance().getGameState()->spawnGameObject(symbol);
@@ -68,6 +63,7 @@ void Grid::onMouseClick()
 		return;
 	}
 	GameManager::instance().getEventsManager()->trigger(EventName::MOVE_PLAYED);
+
 }
 
 // Specific for 3x3 grid in 1D array and win condition being to align 3 symbols.
