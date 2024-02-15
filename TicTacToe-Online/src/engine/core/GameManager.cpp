@@ -9,9 +9,10 @@ GameManager* GameManager::instance_ = NULL;
 
 
 
-void GameManager::InitGameManager(Window* pWindow, GameState* initialGameState) {
+void GameManager::InitGameManager(Window* pWindow, GameState* initialGameState, SocketThread* pSocketThread) {
     this->window = pWindow;
     this->gameState = initialGameState;
+    m_socketThread = pSocketThread;
 }
 
 GameManager& GameManager::instance() 
@@ -52,7 +53,12 @@ Window* GameManager::getWindow()
     return this->window;
 }
 
-EventsManager* GameManager::getEventsManager() 
+Socket* GameManager::CreateSocket()
+{
+    return m_socketThread->CreateSocket();
+}
+
+EventsManager* GameManager::getEventsManager()
 {
     return this->eventsManager;
 }

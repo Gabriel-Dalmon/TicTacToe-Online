@@ -131,6 +131,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\engine\core\GameState.cpp" />
+    <ClCompile Include="src\engine\core\Thread.cpp" />
+    <ClCompile Include="src\engine\networking\Socket.cpp" />
+    <ClCompile Include="src\engine\networking\SocketThread.cpp" />
     <ClCompile Include="src\gameStates\GameOverGameState.cpp" />
     <ClCompile Include="src\gameStates\PauseGameState.cpp" />
     <ClCompile Include="src\gameStates\PlayGameState.cpp" />
@@ -148,9 +151,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\engine\core\GameState.h" />
+    <ClInclude Include="src\engine\core\Thread.h" />
     <ClInclude Include="src\engine\events\AbstractCommand.h" />
     <ClInclude Include="src\engine\events\FunctionCommand.h" />
     <ClInclude Include="src\engine\events\MethodCommand.h" />
+    <ClInclude Include="src\engine\networking\Socket.h" />
+    <ClInclude Include="src\engine\networking\SocketThread.h" />
     <ClInclude Include="src\gameStates\GameOverGameState.h" />
     <ClInclude Include="src\gameStates\PauseGameState.h" />
     <ClInclude Include="src\gameStates\PlayGameState.h" />
@@ -167,7 +173,17 @@
     <ClInclude Include="src\engine\rendering\Window.h" />
     <ClInclude Include="src\utils\VoidClass.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\packages\JsonCpp-source.1.0.2\build\native\JsonCpp-source.targets" Condition="Exists('..\packages\JsonCpp-source.1.0.2\build\native\JsonCpp-source.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\JsonCpp-source.1.0.2\build\native\JsonCpp-source.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\JsonCpp-source.1.0.2\build\native\JsonCpp-source.targets'))" />
+  </Target>
 </Project>
